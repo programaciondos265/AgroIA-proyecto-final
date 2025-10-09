@@ -1,2 +1,2 @@
-# AgroIA-proyecto-final
-Proyecto insignia de la asignatura POO de Key Institute
+# 🌱 AgroIA - Sistema de Detección de Plagas
+a poner los pasos de como hacerlo de correrlo

@@ -589,6 +589,7 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   const { user } = useAuth();
   const [showFAQ, setShowFAQ] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<string>('');
   
   // Obtener el nombre del usuario desde el contexto de autenticación
   const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
@@ -610,7 +611,12 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   };
 
   const handleFAQItem = (question: string) => {
+    setCurrentQuestion(question);
     if (question === '¿Cómo interpretar el resultado?') {
+      setShowDetail(true);
+    } else if (question === '¿Qué hacer si la app detecta mal la plaga?') {
+      setShowDetail(true);
+    } else if (question === '¿Cómo tomar una buena foto?') {
       setShowDetail(true);
     } else {
       // Para las otras preguntas, mostrar alert temporal
@@ -748,29 +754,89 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
             <Username>{userName}</Username>
           </UserSection>
           
-          <DetailTitle>¿Cómo interpretar el resultado?</DetailTitle>
+          <DetailTitle>{currentQuestion}</DetailTitle>
           
           <DetailCard>
             <DetailContent>
-              <DetailParagraph>
-                El sistema utiliza inteligencia artificial para analizar la imagen y determinar la probabilidad de presencia de mosca blanca en la hoja observada.
-              </DetailParagraph>
+              {currentQuestion === '¿Cómo interpretar el resultado?' && (
+                <>
+                  <DetailParagraph>
+                    El sistema utiliza inteligencia artificial para analizar la imagen y determinar la probabilidad de presencia de mosca blanca en la hoja observada.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    Si el resultado se encuentra entre 0 y 30 %, significa que no hay indicios claros del insecto y la planta parece libre de infestación.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    Cuando el valor está entre 31 y 70 %, existe una posible presencia, por lo que se recomienda realizar una revisión manual y tomar imágenes adicionales para confirmar.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    Si el resultado está entre 71 y 100 %, indica una alta probabilidad de infestación y se sugiere actuar de inmediato aplicando medidas de control adecuadas.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    Es importante tener en cuenta que el resultado es una estimación, y factores como la iluminación, el enfoque o la calidad de la imagen pueden afectar la precisión del análisis.
+                  </DetailParagraph>
+                </>
+              )}
               
-              <DetailParagraph>
-                Si el resultado se encuentra entre 0 y 30 %, significa que no hay indicios claros del insecto y la planta parece libre de infestación.
-              </DetailParagraph>
+              {currentQuestion === '¿Qué hacer si la app detecta mal la plaga?' && (
+                <>
+                  <DetailParagraph>
+                    Si la app no reconoce correctamente la plaga, sigue estos pasos:
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Verifica la calidad de la foto: asegúrate de que esté nítida, centrada y bien iluminada.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Toma otra imagen desde un ángulo diferente o con mejor luz natural.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Evita usar flash o filtros, ya que pueden alterar los colores reales.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Usa la opción "Reportar error" para ayudar al sistema a mejorar su precisión.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Consulta el catálogo de plagas dentro de la app para comparar imágenes y confirmar manualmente cuál se asemeja más a la tuya.
+                  </DetailParagraph>
+                </>
+              )}
               
-              <DetailParagraph>
-                Cuando el valor está entre 31 y 70 %, existe una posible presencia, por lo que se recomienda realizar una revisión manual y tomar imágenes adicionales para confirmar.
-              </DetailParagraph>
-              
-              <DetailParagraph>
-                Si el resultado está entre 71 y 100 %, indica una alta probabilidad de infestación y se sugiere actuar de inmediato aplicando medidas de control adecuadas.
-              </DetailParagraph>
-              
-              <DetailParagraph>
-                Es importante tener en cuenta que el resultado es una estimación, y factores como la iluminación, el enfoque o la calidad de la imagen pueden afectar la precisión del análisis.
-              </DetailParagraph>
+              {currentQuestion === '¿Cómo tomar una buena foto?' && (
+                <>
+                  <DetailParagraph>
+                    Para que la app identifique correctamente la plaga, considera lo siguiente:
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Usa luz natural, preferiblemente en exteriores o cerca de una ventana, evitando el flash.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Enfoca claramente la parte afectada, ya sea hoja, tallo o fruto.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Acércate lo suficiente, manteniendo el celular estable y a unos 10-15 cm del área a analizar.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Evita sombras, reflejos y movimientos bruscos al capturar la imagen.
+                  </DetailParagraph>
+                  
+                  <DetailParagraph>
+                    • Toma varias fotos desde distintos ángulos para aumentar la precisión del reconocimiento.
+                  </DetailParagraph>
+                </>
+              )}
             </DetailContent>
           </DetailCard>
           

@@ -6,23 +6,19 @@ import {
   deleteAnalysis,
   uploadMiddleware
 } from '../controllers/pestAnalysisController';
-import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
-router.use(authenticateToken);
-
-// Analizar imagen de plaga
+// Analizar imagen de plaga (requiere autenticación)
 router.post('/analyze', uploadMiddleware, analyzePestImage);
 
-// Obtener historial de análisis
+// Obtener historial de análisis (requiere autenticación)
 router.get('/history', getAnalysisHistory);
 
-// Obtener estadísticas de análisis
+// Obtener estadísticas de análisis (requiere autenticación)
 router.get('/stats', getAnalysisStats);
 
-// Eliminar análisis específico
+// Eliminar análisis específico (requiere autenticación)
 router.delete('/:analysisId', deleteAnalysis);
 
 export default router;

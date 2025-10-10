@@ -9,7 +9,7 @@ echo Esperando 3 segundos...
 timeout /t 3 /nobreak >nul
 
 echo Iniciando Frontend...
-start "Frontend" cmd /k "cd agro-ia && npm run dev"
+start "Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo ✅ Ambos servicios iniciados

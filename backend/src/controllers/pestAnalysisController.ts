@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
 import multer from 'multer';
 import sharp from 'sharp';
-import { UserModel } from '../models/User';
+import { PestAnalysisModel, PestAnalysis } from '../models/FirebaseModels';
+import { auth } from '../config/firebase';
+
+// Extender el tipo Request para incluir userId
+interface AuthRequest extends Request {
+  userId: string;
+}
 
 // Configuración de multer para subida de imágenes
 const storage = multer.memoryStorage();
@@ -11,7 +16,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB límite
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -20,30 +25,32 @@ const upload = multer({
   }
 });
 
-// Tipos para el análisis de plagas
-interface PestDetection {
-  pestType: string;
-  confidence: number;
-  description: string;
-  treatment: string;
-  severity: 'low' | 'medium' | 'high';
-}
+// Middleware para verificar token de Firebase
+const verifyFirebaseToken = async (req: Request, res: Response, next: any) => {
+  try {
+    const token = req.headers.authorization?.split('Bearer ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token de autorización requerido'
+      });
+    }
 
-interface AnalysisResult {
-  hasPest: boolean;
-  detections: PestDetection[];
-  imageAnalysis: {
-    brightness: number;
-    contrast: number;
-    quality: 'good' | 'fair' | 'poor';
-    dimensions: { width: number; height: number };
-    fileSize: number;
-  };
-  recommendations: string[];
-}
+    const decodedToken = await auth.verifyIdToken(token);
+    (req as AuthRequest).userId = decodedToken.uid;
+    next();
+  } catch (error) {
+    console.error('Firebase token verification error:', error);
+    return res.status(401).json({
+      success: false,
+      message: 'Token inválido'
+    });
+  }
+};
 
 // Simulación de análisis de plagas (en producción usarías un modelo real de IA)
-async function analyzeImageForPests(imageBuffer: Buffer): Promise<AnalysisResult> {
+async function analyzeImageForPests(imageBuffer: Buffer): Promise<PestAnalysis['analysisResult']> {
   try {
     // Procesar imagen con Sharp para obtener metadatos
     const metadata = await sharp(imageBuffer).metadata();
@@ -84,7 +91,7 @@ async function analyzeImageForPests(imageBuffer: Buffer): Promise<AnalysisResult
       }
     ];
 
-    const detections: PestDetection[] = [];
+    const detections: any[] = [];
     
     // Simular detección de plagas (35% de probabilidad)
     if (random < 0.35) {
@@ -115,12 +122,12 @@ async function analyzeImageForPests(imageBuffer: Buffer): Promise<AnalysisResult
       recommendations.push('Se detectaron plagas en tu cultivo');
       recommendations.push('Aplica el tratamiento recomendado lo antes posible');
       
-      if (detections.some(d => d.severity === 'high')) {
+      if (detections.some((d: any) => d.severity === 'high')) {
         recommendations.push('⚠️ Plagas de alta severidad detectadas - acción inmediata requerida');
       }
       
       // Recomendaciones específicas por tipo de plaga
-      const pestTypes = detections.map(d => d.pestType);
+      const pestTypes = detections.map((d: any) => d.pestType);
       if (pestTypes.includes('Pulgón')) {
         recommendations.push('💡 Para pulgones, considera usar mariquitas como control biológico');
       }
@@ -169,9 +176,11 @@ async function analyzeImageForPests(imageBuffer: Buffer): Promise<AnalysisResult
 export const uploadMiddleware = upload.single('image');
 
 // Analizar imagen de plaga
-export const analyzePestImage = async (req: AuthRequest, res: Response) => {
+export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
+    const authReq = req as AuthRequest;
+    
+    if (!authReq.file) {
       return res.status(400).json({
         success: false,
         message: 'No se proporcionó ninguna imagen'
@@ -179,28 +188,38 @@ export const analyzePestImage = async (req: AuthRequest, res: Response) => {
     }
 
     const { cropType, location, notes } = req.body;
-    const userId = req.userId;
-
-    // Verificar que el usuario existe
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-    }
+    const userId = authReq.userId;
 
     // Analizar la imagen
-    const analysisResult = await analyzeImageForPests(req.file.buffer);
+    const analysisResult = await analyzeImageForPests(authReq.file.buffer);
 
-    // Aquí podrías guardar el análisis en la base de datos
-    // Por ahora solo devolvemos el resultado
+    // Convertir imagen a base64 para almacenamiento
+    const imageData = `data:${authReq.file.mimetype};base64,${authReq.file.buffer.toString('base64')}`;
+
+    // Crear análisis en Firestore
+    console.log('🔍 analyzePestImage - Creando análisis en Firestore...');
+    console.log('🔍 analyzePestImage - userId:', userId);
+    console.log('🔍 analyzePestImage - analysisResult:', analysisResult);
+    
+    const analysis = await PestAnalysisModel.create({
+      userId,
+      imageUrl: '', // En producción, subir a Firebase Storage
+      imageData,
+      analysisResult,
+      metadata: {
+        cropType: cropType || null,
+        location: location || null,
+        notes: notes || null
+      }
+    });
+    
+    console.log('✅ analyzePestImage - Análisis creado exitosamente:', analysis.id);
 
     res.json({
       success: true,
       message: 'Análisis completado exitosamente',
       data: {
-        analysis: analysisResult,
+        analysis,
         metadata: {
           cropType: cropType || null,
           location: location || null,
@@ -218,56 +237,85 @@ export const analyzePestImage = async (req: AuthRequest, res: Response) => {
       message: 'Error interno del servidor al analizar la imagen'
     });
   }
-};
+}];
 
 // Obtener historial de análisis del usuario
-export const getAnalysisHistory = async (req: AuthRequest, res: Response) => {
+export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId;
+    const authReq = req as AuthRequest;
+    const userId = authReq.userId;
     const { page = 1, limit = 10, hasPest } = req.query;
 
-    // Aquí implementarías la lógica para obtener el historial desde la base de datos
-    // Por ahora devolvemos un array vacío
-    const history = [];
+    console.log('🔍 getAnalysisHistory - userId:', userId);
+    console.log('🔍 getAnalysisHistory - query params:', { page, limit, hasPest });
+
+    if (!userId) {
+      console.error('❌ No userId found in request');
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado'
+      });
+    }
+
+    console.log('🔍 Verificando Firebase...');
+    const { firestore } = await import('../config/firebase');
+    if (!firestore) {
+      console.error('❌ Firebase Firestore no está disponible');
+      return res.status(500).json({
+        success: false,
+        message: 'Firebase no está configurado correctamente'
+      });
+    }
+    console.log('✅ Firebase Firestore disponible');
+
+    console.log('📊 Calling PestAnalysisModel.findByUserId...');
+    const analyses = await PestAnalysisModel.findByUserId(userId, parseInt(limit as string) * parseInt(page as string));
+    console.log('📊 Found analyses:', analyses.length);
+    
+    // Filtrar por hasPest si se especifica
+    let filteredAnalyses = analyses;
+    if (hasPest !== undefined) {
+      const hasPestBool = hasPest === 'true';
+      filteredAnalyses = analyses.filter(a => a.analysisResult.hasPest === hasPestBool);
+    }
+
+    // Paginación
+    const startIndex = (parseInt(page as string) - 1) * parseInt(limit as string);
+    const endIndex = startIndex + parseInt(limit as string);
+    const paginatedAnalyses = filteredAnalyses.slice(startIndex, endIndex);
+
+    console.log('✅ Returning paginated analyses:', paginatedAnalyses.length);
 
     res.json({
       success: true,
       message: 'Historial obtenido exitosamente',
       data: {
-        history,
+        history: paginatedAnalyses,
         pagination: {
           page: parseInt(page as string),
           limit: parseInt(limit as string),
-          total: 0,
-          totalPages: 0
+          total: filteredAnalyses.length,
+          totalPages: Math.ceil(filteredAnalyses.length / parseInt(limit as string))
         }
       }
     });
 
   } catch (error) {
-    console.error('Error in getAnalysisHistory:', error);
+    console.error('❌ Error in getAnalysisHistory:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor al obtener el historial'
     });
   }
-};
+}];
 
 // Obtener estadísticas de análisis del usuario
-export const getAnalysisStats = async (req: AuthRequest, res: Response) => {
+export const getAnalysisStats = [verifyFirebaseToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.userId;
+    const authReq = req as AuthRequest;
+    const userId = authReq.userId;
 
-    // Aquí implementarías la lógica para obtener estadísticas desde la base de datos
-    // Por ahora devolvemos estadísticas simuladas
-    const stats = {
-      totalAnalyses: 0,
-      pestDetections: 0,
-      mostCommonPest: null,
-      recentAnalyses: 0, // últimos 7 días
-      averageConfidence: 0,
-      pestTypesCount: {}
-    };
+    const stats = await PestAnalysisModel.getUserStats(userId);
 
     res.json({
       success: true,
@@ -282,16 +330,32 @@ export const getAnalysisStats = async (req: AuthRequest, res: Response) => {
       message: 'Error interno del servidor al obtener las estadísticas'
     });
   }
-};
+}];
 
 // Eliminar análisis del historial
-export const deleteAnalysis = async (req: AuthRequest, res: Response) => {
+export const deleteAnalysis = [verifyFirebaseToken, async (req: Request, res: Response) => {
   try {
+    const authReq = req as AuthRequest;
     const { analysisId } = req.params;
-    const userId = req.userId;
+    const userId = authReq.userId;
 
-    // Aquí implementarías la lógica para eliminar el análisis desde la base de datos
-    // Por ahora devolvemos éxito
+    // Verificar que el análisis pertenece al usuario
+    const analysis = await PestAnalysisModel.findById(analysisId);
+    if (!analysis || analysis.userId !== userId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Análisis no encontrado'
+      });
+    }
+
+    const deleted = await PestAnalysisModel.delete(analysisId);
+    
+    if (!deleted) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error al eliminar el análisis'
+      });
+    }
 
     res.json({
       success: true,
@@ -305,4 +369,4 @@ export const deleteAnalysis = async (req: AuthRequest, res: Response) => {
       message: 'Error interno del servidor al eliminar el análisis'
     });
   }
-};
+}];

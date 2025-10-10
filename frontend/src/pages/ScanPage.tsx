@@ -201,6 +201,7 @@ export function ScanPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [photoTimestamp, setPhotoTimestamp] = useState<Date | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -247,6 +248,21 @@ export function ScanPage() {
     }
   };
 
+  const handleCaptureClick = async () => {
+    if (!capturedImage) {
+      // Si no hay imagen capturada, activar cámara y tomar foto
+      if (!isCameraOpen) {
+        await openCamera();
+        // Esperar un momento para que la cámara se inicialice
+        setTimeout(() => {
+          captureImage();
+        }, 500);
+      } else {
+        captureImage();
+      }
+    }
+  };
+
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -261,7 +277,10 @@ export function ScanPage() {
         const imageData = canvas.toDataURL('image/jpeg', 0.8);
         setCapturedImage(imageData);
         
-        // Detener la cámara después de tomar la foto
+        // Guardar el timestamp cuando se toma la foto
+        setPhotoTimestamp(new Date());
+        
+        // Detener la cámara inmediatamente después de tomar la foto
         stopCamera();
         console.log('📸 Foto tomada y cámara detenida');
       }
@@ -282,7 +301,18 @@ export function ScanPage() {
       
       console.log('📁 Archivo creado:', file.name, file.size, 'bytes');
       
-      const result = await pestAnalysisService.analyzeImage(file);
+      // Enviar el timestamp de cuando se tomó la foto (solo si existe)
+      const metadata: { photoTimestamp?: string } = {};
+      
+      if (photoTimestamp) {
+        metadata.photoTimestamp = photoTimestamp.toISOString();
+        console.log('📅 Enviando metadata con photoTimestamp:', metadata);
+        console.log('📅 photoTimestamp original:', photoTimestamp);
+      } else {
+        console.log('📅 No hay photoTimestamp disponible (imagen de galería)');
+      }
+      
+      const result = await pestAnalysisService.analyzeImage(file, metadata);
       
       console.log('✅ Resultado del análisis:', result);
       console.log('🔍 Estructura del resultado:', {
@@ -308,7 +338,11 @@ export function ScanPage() {
   const retakePhoto = () => {
     setCapturedImage(null);
     setAnalysisResult(null);
-    openCamera(); // openCamera ya detiene la cámara anterior automáticamente
+    setPhotoTimestamp(null);
+    // NO reactivar la cámara automáticamente
+    // El usuario tendrá que presionar el botón de captura para activarla
+    stopCamera();
+    console.log('🔄 Listo para nueva foto - cámara apagada');
   };
 
   const goBack = () => {
@@ -319,7 +353,10 @@ export function ScanPage() {
   const closeAnalysisModal = () => {
     setAnalysisResult(null);
     setCapturedImage(null);
-    openCamera(); // openCamera ya detiene la cámara anterior automáticamente
+    setPhotoTimestamp(null);
+    // NO reactivar la cámara automáticamente
+    stopCamera();
+    console.log('🔍 Modal cerrado - cámara apagada');
   };
 
   const handleSaveAndGoToHistory = () => {
@@ -341,6 +378,10 @@ export function ScanPage() {
         const result = e.target?.result as string;
         setCapturedImage(result);
         setIsCameraOpen(false);
+        
+        // Para imágenes de galería, no establecer photoTimestamp
+        // porque no sabemos cuándo se tomó originalmente
+        setPhotoTimestamp(null);
       };
       reader.readAsDataURL(file);
     }
@@ -368,7 +409,7 @@ export function ScanPage() {
           </ActionButton>
           
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <CaptureButton onClick={capturedImage ? undefined : captureImage}>
+            <CaptureButton onClick={capturedImage ? undefined : handleCaptureClick}>
               <FiCamera />
             </CaptureButton>
             <CaptureText>Tomar foto para escanear</CaptureText>
@@ -410,6 +451,7 @@ export function ScanPage() {
           onClose={closeAnalysisModal}
           imageData={capturedImage || undefined}
           onSave={handleSaveAndGoToHistory}
+          timestamp={photoTimestamp}
         />
       )}
     </Page>

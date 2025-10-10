@@ -51,6 +51,7 @@ class PestAnalysisService {
     cropType?: string;
     location?: string;
     notes?: string;
+    photoTimestamp?: string;
   }): Promise<AnalysisResult> {
     try {
       const token = await this.getAuthToken();
@@ -62,6 +63,14 @@ class PestAnalysisService {
       if (metadata?.cropType) formData.append('cropType', metadata.cropType);
       if (metadata?.location) formData.append('location', metadata.location);
       if (metadata?.notes) formData.append('notes', metadata.notes);
+      if (metadata?.photoTimestamp) formData.append('photoTimestamp', metadata.photoTimestamp);
+
+      console.log('📤 Enviando FormData con metadata:', {
+        cropType: metadata?.cropType,
+        location: metadata?.location,
+        notes: metadata?.notes,
+        photoTimestamp: metadata?.photoTimestamp
+      });
 
       const response = await fetch(`${this.apiUrl}/pest-analysis/analyze`, {
         method: 'POST',
@@ -137,6 +146,20 @@ class PestAnalysisService {
 
       const result = await response.json();
       console.log('📊 Datos recibidos del servidor:', result);
+      console.log('📊 Estructura de result.data:', result.data);
+      console.log('📊 Historial recibido:', result.data?.history);
+      
+      if (result.data?.history) {
+        result.data.history.forEach((item: any, index: number) => {
+          console.log(`📅 Item ${index} del historial:`, {
+            id: item.id,
+            createdAt: item.createdAt,
+            createdAtType: typeof item.createdAt,
+            createdAtInstance: item.createdAt instanceof Date
+          });
+        });
+      }
+      
       return result.data;
     } catch (error) {
       console.error('❌ Error getting history:', error);
@@ -227,6 +250,55 @@ class PestAnalysisService {
       mostCommonPest,
       averageConfidence
     };
+  }
+
+  // Eliminar análisis específico
+  async deleteAnalysis(analysisId: string): Promise<void> {
+    try {
+      const token = await this.getAuthToken();
+      
+      const response = await fetch(`${this.apiUrl}/pest-analysis/${analysisId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el análisis');
+      }
+
+      const result = await response.json();
+      console.log('✅ Análisis eliminado:', result);
+    } catch (error) {
+      console.error('❌ Error deleting analysis:', error);
+      throw error;
+    }
+  }
+
+  // Eliminar análisis antiguos con fechas incorrectas
+  async deleteOldAnalyses(): Promise<{ deletedCount: number }> {
+    try {
+      const token = await this.getAuthToken();
+      
+      const response = await fetch(`${this.apiUrl}/pest-analysis/cleanup/old-analyses`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar análisis antiguos');
+      }
+
+      const result = await response.json();
+      console.log('✅ Análisis antiguos eliminados:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Error deleting old analyses:', error);
+      throw error;
+    }
   }
 }
 

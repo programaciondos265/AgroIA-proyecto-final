@@ -162,16 +162,11 @@ const HistoryItem = styled.div`
   gap: 12px;
   padding-bottom: 16px;
   border-bottom: 1px solid #E0E0E0;
-  cursor: pointer;
   transition: background 0.2s ease;
   border-radius: 8px;
   padding: 12px;
   margin: -12px;
   margin-bottom: 4px;
-  
-  &:hover {
-    background: #F5F5F5;
-  }
   
   &:last-child {
     border-bottom: none;
@@ -643,7 +638,7 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
                   return history.map((item, index) => {
                     console.log(`🎨 HistoryModal - Renderizando item ${index + 1}:`, item);
                     return (
-                      <HistoryItem key={item.id} onClick={() => handleItemClick(item)}>
+                      <HistoryItem key={item.id}>
                         <ImagePreview 
                           src={item.imageData} 
                           alt="Imagen analizada"

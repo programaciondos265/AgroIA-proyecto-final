@@ -3,6 +3,7 @@ import { AnalysisResult } from '../services/pestAnalysisService';
 import { FiUser, FiClock, FiAlertTriangle, FiSave, FiCamera, FiHome, FiX } from 'react-icons/fi';
 import { useState } from 'react';
 import { UserConfigModal } from './UserConfigModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Modal = styled.div`
   position: fixed;
@@ -375,10 +376,15 @@ interface AnalysisModalProps {
   onClose: () => void;
   imageData?: string;
   onSave?: () => void;
+  timestamp?: Date | null;
 }
 
-export function AnalysisModal({ result, onClose, imageData, onSave }: AnalysisModalProps) {
+export function AnalysisModal({ result, onClose, imageData, onSave, timestamp }: AnalysisModalProps) {
   const [showUserConfig, setShowUserConfig] = useState(false);
+  const { user } = useAuth();
+  
+  // Obtener el nombre del usuario desde el contexto de autenticación
+  const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
   
   console.log('🔍 AnalysisModal recibió result:', result);
   console.log('🔍 AnalysisModal - hasPest:', result?.hasPest);
@@ -434,7 +440,7 @@ export function AnalysisModal({ result, onClose, imageData, onSave }: AnalysisMo
             <Avatar onClick={() => setShowUserConfig(true)} style={{ cursor: 'pointer' }}>
               <UserAvatarSVG />
             </Avatar>
-            <Username>Usuario</Username>
+            <Username>{userName}</Username>
           </UserSection>
         </Header>
 
@@ -461,7 +467,7 @@ export function AnalysisModal({ result, onClose, imageData, onSave }: AnalysisMo
             
             <DateTime>
               <FiClock />
-              Fecha y hora: {formatDateTime(new Date())}
+              Fecha y hora: {timestamp ? formatDateTime(timestamp) : 'Fecha no disponible'}
             </DateTime>
             
             <ProgressContainer>

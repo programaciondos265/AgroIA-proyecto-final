@@ -26,27 +26,87 @@ class HistoryService {
       console.log('📊 Resultado del historial:', result);
       
       // Transformar los datos de Firebase al formato esperado
-      const transformedHistory: AnalysisHistoryItem[] = result.history.map(item => {
-        // Manejar la fecha de manera segura
+      const transformedHistory: AnalysisHistoryItem[] = result.history.map((item, index) => {
+        console.log(`🔍 Procesando item ${index}:`, {
+          id: item.id,
+          createdAt: item.createdAt,
+          createdAtType: typeof item.createdAt,
+          createdAtInstance: item.createdAt instanceof Date,
+          createdAtKeys: item.createdAt && typeof item.createdAt === 'object' ? Object.keys(item.createdAt) : 'N/A',
+          createdAtString: item.createdAt?.toString(),
+          createdAtJSON: JSON.stringify(item.createdAt)
+        });
+        
+        // Manejar la fecha de manera segura y robusta
         let timestamp: Date;
         try {
+          // Caso 1: Ya es un objeto Date
           if (item.createdAt instanceof Date) {
             timestamp = item.createdAt;
-          } else if (typeof item.createdAt === 'string' || typeof item.createdAt === 'number') {
+            console.log(`✅ Item ${index} - Usando fecha Date directamente:`, timestamp);
+          }
+          // Caso 2: Es un string o number
+          else if (typeof item.createdAt === 'string' || typeof item.createdAt === 'number') {
             timestamp = new Date(item.createdAt);
-          } else {
-            console.warn('⚠️ Fecha inválida en item:', item.createdAt);
-            timestamp = new Date(); // Usar fecha actual como fallback
+            console.log(`✅ Item ${index} - Convertido de string/number:`, timestamp);
+          }
+          // Caso 3: Es un objeto con método toDate (Firebase Timestamp)
+          else if (item.createdAt && typeof item.createdAt === 'object' && 'toDate' in item.createdAt) {
+            timestamp = (item.createdAt as any).toDate();
+            console.log(`✅ Item ${index} - Convertido de Firebase Timestamp:`, timestamp);
+          }
+          // Caso 4: Es un objeto con propiedades de fecha (Firebase Timestamp serializado)
+          else if (item.createdAt && typeof item.createdAt === 'object' && ('seconds' in item.createdAt || 'nanoseconds' in item.createdAt)) {
+            // Intentar convertir desde Firebase Timestamp serializado
+            const firebaseTimestamp = item.createdAt as any;
+            if (firebaseTimestamp.seconds) {
+              timestamp = new Date(firebaseTimestamp.seconds * 1000);
+              console.log(`✅ Item ${index} - Convertido de Firebase Timestamp serializado:`, timestamp);
+            } else {
+              console.warn(`⚠️ Item ${index} - Firebase Timestamp sin seconds:`, item.createdAt);
+              timestamp = new Date('2024-01-01T00:00:00Z');
+            }
+          }
+          // Caso 5: Es un objeto con _seconds (otra forma de Firebase Timestamp)
+          else if (item.createdAt && typeof item.createdAt === 'object' && '_seconds' in item.createdAt) {
+            const firebaseTimestamp = item.createdAt as any;
+            timestamp = new Date(firebaseTimestamp._seconds * 1000);
+            console.log(`✅ Item ${index} - Convertido de Firebase Timestamp _seconds:`, timestamp);
+          }
+          // Caso 6: Es null o undefined
+          else if (item.createdAt === null || item.createdAt === undefined) {
+            console.warn(`⚠️ Item ${index} - Fecha es null/undefined:`, item.createdAt);
+            timestamp = new Date('2024-01-01T00:00:00Z'); // Fecha fija de error
+          }
+          // Caso 7: Otro tipo de objeto - intentar convertir a string primero
+          else if (item.createdAt && typeof item.createdAt === 'object') {
+            console.warn(`⚠️ Item ${index} - Objeto de fecha no reconocido, intentando conversión:`, item.createdAt);
+            try {
+              // Intentar convertir el objeto a string y luego a Date
+              const dateString = item.createdAt.toString();
+              timestamp = new Date(dateString);
+              console.log(`✅ Item ${index} - Convertido desde objeto toString:`, timestamp);
+            } catch (error) {
+              console.error(`❌ Item ${index} - Error en conversión de objeto:`, error);
+              timestamp = new Date('2024-01-01T00:00:00Z'); // Fecha fija de error
+            }
+          }
+          // Caso 8: Otro tipo no reconocido
+          else {
+            console.warn(`⚠️ Item ${index} - Tipo de fecha no reconocido:`, typeof item.createdAt, item.createdAt);
+            timestamp = new Date('2024-01-01T00:00:00Z'); // Fecha fija de error
           }
           
           // Verificar que la fecha sea válida
           if (isNaN(timestamp.getTime())) {
-            console.warn('⚠️ Fecha inválida después de conversión:', item.createdAt);
-            timestamp = new Date(); // Usar fecha actual como fallback
+            console.warn(`⚠️ Item ${index} - Fecha inválida después de conversión:`, item.createdAt);
+            timestamp = new Date('2024-01-01T00:00:00Z'); // Fecha fija de error
           }
+          
+          console.log(`📅 Item ${index} - Timestamp final:`, timestamp, `(${timestamp.toISOString()})`);
         } catch (error) {
-          console.error('❌ Error procesando fecha:', error, item.createdAt);
-          timestamp = new Date(); // Usar fecha actual como fallback
+          console.error(`❌ Item ${index} - Error procesando fecha:`, error, item.createdAt);
+          timestamp = new Date('2024-01-01T00:00:00Z'); // Fecha fija de error
         }
         
         return {

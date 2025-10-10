@@ -161,7 +161,7 @@ export class PestAnalysisModel {
   }
 
   // Crear análisis
-  static async create(analysisData: Omit<PestAnalysis, 'id' | 'createdAt' | 'updatedAt'>): Promise<PestAnalysis> {
+  static async create(analysisData: Omit<PestAnalysis, 'id' | 'createdAt' | 'updatedAt'> & { photoTimestamp?: Date }): Promise<PestAnalysis> {
     console.log('🔍 PestAnalysisModel.create - analysisData:', { 
       userId: analysisData.userId, 
       hasImageData: !!analysisData.imageData,
@@ -175,9 +175,25 @@ export class PestAnalysisModel {
     
     try {
       const now = new Date();
+      const { photoTimestamp, ...restData } = analysisData;
+      
+      // Usar photoTimestamp si está disponible, sino usar fecha actual
+      const createdAt = photoTimestamp || now;
+      
+      console.log('📅 Timestamp que se va a guardar:', {
+        photoTimestamp: photoTimestamp,
+        photoTimestampType: typeof photoTimestamp,
+        photoTimestampExists: !!photoTimestamp,
+        createdAt: createdAt,
+        createdAtType: typeof createdAt,
+        createdAtString: createdAt.toString(),
+        isUsingPhotoTimestamp: !!photoTimestamp,
+        isUsingCurrentTime: !photoTimestamp
+      });
+      
       const analysis: Omit<PestAnalysis, 'id'> = {
-        ...analysisData,
-        createdAt: now,
+        ...restData,
+        createdAt: createdAt,
         updatedAt: now
       };
 
@@ -220,14 +236,42 @@ export class PestAnalysisModel {
       
       const analyses = snapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('📄 Document data:', { id: doc.id, userId: data.userId, createdAt: data.createdAt });
-        return { id: doc.id, ...data } as PestAnalysis;
+        console.log('📄 Document data:', { id: doc.id, userId: data.userId, createdAt: data.createdAt, createdAtType: typeof data.createdAt });
+        
+        // Convertir Firebase Timestamp a Date si es necesario
+        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt;
+        const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt;
+        
+        console.log('📅 Fechas convertidas:', { 
+          id: doc.id, 
+          createdAt: createdAt, 
+          updatedAt: updatedAt,
+          createdAtType: typeof createdAt 
+        });
+        
+        return { 
+          id: doc.id, 
+          ...data, 
+          createdAt: createdAt,
+          updatedAt: updatedAt
+        } as PestAnalysis;
       });
       
       // Ordenar por createdAt en memoria (más reciente primero)
       analyses.sort((a, b) => {
+        // Asegurar que ambas fechas sean objetos Date válidos
         const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
         const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        
+        // Verificar que las fechas sean válidas
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          console.warn('⚠️ Fechas inválidas en ordenación:', { 
+            idA: a.id, createdAtA: a.createdAt, 
+            idB: b.id, createdAtB: b.createdAt 
+          });
+          return 0;
+        }
+        
         return dateB.getTime() - dateA.getTime();
       });
       

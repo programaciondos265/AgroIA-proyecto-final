@@ -4,6 +4,7 @@ import {
   getAnalysisHistory,
   getAnalysisStats,
   deleteAnalysis,
+  deleteOldAnalyses,
   uploadMiddleware
 } from '../controllers/pestAnalysisController';
 
@@ -20,5 +21,8 @@ router.get('/stats', getAnalysisStats);
 
 // Eliminar análisis específico (requiere autenticación)
 router.delete('/:analysisId', deleteAnalysis);
+
+// Eliminar análisis antiguos con fechas incorrectas (requiere autenticación)
+router.delete('/cleanup/old-analyses', deleteOldAnalyses);
 
 export default router;

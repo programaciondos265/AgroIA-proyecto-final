@@ -4,9 +4,10 @@ import sharp from 'sharp';
 import { PestAnalysisModel, PestAnalysis } from '../models/FirebaseModels';
 import { auth } from '../config/firebase';
 
-// Extender el tipo Request para incluir userId
+// Extender el tipo Request para incluir userId y file de Multer
 interface AuthRequest extends Request {
   userId: string;
+  file?: Express.Multer.File;
 }
 
 // Configuración de multer para subida de imágenes
@@ -187,7 +188,7 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
       });
     }
 
-    const { cropType, location, notes } = req.body;
+    const { cropType, location, notes, photoTimestamp } = req.body;
     const userId = authReq.userId;
 
     // Analizar la imagen
@@ -200,6 +201,18 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
     console.log('🔍 analyzePestImage - Creando análisis en Firestore...');
     console.log('🔍 analyzePestImage - userId:', userId);
     console.log('🔍 analyzePestImage - analysisResult:', analysisResult);
+    console.log('🔍 analyzePestImage - photoTimestamp recibido:', photoTimestamp);
+    console.log('🔍 analyzePestImage - photoTimestamp tipo:', typeof photoTimestamp);
+    console.log('🔍 analyzePestImage - photoTimestamp existe:', !!photoTimestamp);
+    
+    // Convertir photoTimestamp a Date si existe
+    let photoTimestampDate: Date | undefined;
+    if (photoTimestamp) {
+      photoTimestampDate = new Date(photoTimestamp);
+      console.log('🔍 analyzePestImage - photoTimestamp convertido:', photoTimestampDate);
+    } else {
+      console.log('🔍 analyzePestImage - No hay photoTimestamp (imagen de galería)');
+    }
     
     const analysis = await PestAnalysisModel.create({
       userId,
@@ -210,9 +223,11 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
         cropType: cropType || null,
         location: location || null,
         notes: notes || null
-      }
+      },
+      photoTimestamp: photoTimestampDate
     });
     
+    console.log('🔍 analyzePestImage - analysis.createdAt:', analysis.createdAt);
     console.log('✅ analyzePestImage - Análisis creado exitosamente:', analysis.id);
 
     res.json({
@@ -224,7 +239,7 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
           cropType: cropType || null,
           location: location || null,
           notes: notes || null,
-          analyzedAt: new Date().toISOString(),
+          analyzedAt: photoTimestamp ? new Date(photoTimestamp).toISOString() : new Date().toISOString(),
           userId: userId
         }
       }
@@ -285,6 +300,18 @@ export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res
     const paginatedAnalyses = filteredAnalyses.slice(startIndex, endIndex);
 
     console.log('✅ Returning paginated analyses:', paginatedAnalyses.length);
+    
+    // Log detallado de las fechas que se están devolviendo
+    console.log('📅 Fechas que se devuelven al frontend:');
+    paginatedAnalyses.forEach((analysis, index) => {
+      console.log(`📅 Item ${index}:`, {
+        id: analysis.id,
+        createdAt: analysis.createdAt,
+        createdAtType: typeof analysis.createdAt,
+        createdAtInstance: analysis.createdAt instanceof Date,
+        createdAtString: analysis.createdAt?.toString()
+      });
+    });
 
     res.json({
       success: true,
@@ -367,6 +394,62 @@ export const deleteAnalysis = [verifyFirebaseToken, async (req: Request, res: Re
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor al eliminar el análisis'
+    });
+  }
+}];
+
+// Eliminar todos los análisis antiguos con fechas incorrectas
+export const deleteOldAnalyses = [verifyFirebaseToken, async (req: Request, res: Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    const userId = authReq.userId;
+
+    console.log('🗑️ Eliminando análisis antiguos para userId:', userId);
+
+    // Obtener todos los análisis del usuario
+    const analyses = await PestAnalysisModel.findByUserId(userId, 1000);
+    console.log('📊 Total de análisis encontrados:', analyses.length);
+
+    // Filtrar análisis con fechas sospechosas (31 dic 2023, 18:00)
+    const suspiciousDate = new Date('2023-12-31T18:00:00Z');
+    const oldAnalyses = analyses.filter(analysis => {
+      const createdAt = analysis.createdAt instanceof Date ? analysis.createdAt : new Date(analysis.createdAt);
+      // Buscar fechas que sean exactamente 31 dic 2023, 18:00 o muy cercanas
+      const timeDiff = Math.abs(createdAt.getTime() - suspiciousDate.getTime());
+      return timeDiff < 60000; // Dentro de 1 minuto de diferencia
+    });
+
+    console.log('🔍 Análisis sospechosos encontrados:', oldAnalyses.length);
+    oldAnalyses.forEach(analysis => {
+      console.log('🗑️ Eliminando análisis:', {
+        id: analysis.id,
+        createdAt: analysis.createdAt,
+        createdAtString: analysis.createdAt.toString()
+      });
+    });
+
+    // Eliminar análisis antiguos
+    let deletedCount = 0;
+    for (const analysis of oldAnalyses) {
+      const deleted = await PestAnalysisModel.delete(analysis.id);
+      if (deleted) {
+        deletedCount++;
+      }
+    }
+
+    console.log('✅ Análisis antiguos eliminados:', deletedCount);
+
+    res.json({
+      success: true,
+      message: `Se eliminaron ${deletedCount} análisis antiguos con fechas incorrectas`,
+      deletedCount
+    });
+
+  } catch (error) {
+    console.error('Error in deleteOldAnalyses:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor al eliminar análisis antiguos'
     });
   }
 }];

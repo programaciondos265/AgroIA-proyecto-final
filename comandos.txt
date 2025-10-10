@@ -5,3 +5,13 @@ git add .
 git commit -m "comentario del commit"
 
 git push
+
+
+
+//Para clonarlo
+git clone url
+
+
+// Para extraerlo
+git pull
+

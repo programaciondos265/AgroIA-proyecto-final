@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { FiX, FiHelpCircle, FiSend, FiPhone, FiMail, FiZap, FiCamera, FiChevronRight } from 'react-icons/fi';
+import { FiX, FiHelpCircle, FiSend, FiPhone, FiMail, FiZap, FiCamera, FiChevronRight, FiAlertTriangle, FiSmartphone, FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 
@@ -581,6 +581,309 @@ const UserAvatarSVG = () => {
   );
 };
 
+// Estilos para el modal de contacto técnico
+const TechnicianContactModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #70C2B8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3000;
+  padding: 20px;
+  overflow-y: auto;
+  
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
+`;
+
+const TechnicianCloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #2F6E62;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #1F4E42;
+    transform: scale(1.05);
+  }
+  
+  @media (min-width: 768px) {
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+`;
+
+const TechnicianCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
+  @media (min-width: 768px) {
+    padding: 40px;
+    max-width: 600px;
+  }
+`;
+
+const TechnicianTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    color: #2F6E62;
+  }
+  
+  h2 {
+    color: #2F6E62;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    
+    @media (min-width: 768px) {
+      font-size: 24px;
+    }
+  }
+`;
+
+const TechnicianContent = styled.div`
+  color: #2F6E62;
+  line-height: 1.6;
+  
+  p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    
+    @media (min-width: 768px) {
+      font-size: 18px;
+    }
+  }
+`;
+
+const TechnicianBackButton = styled.button`
+  width: 100%;
+  max-width: 400px;
+  padding: 18px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid #2F6E62;
+  background: white;
+  color: #2F6E62;
+  
+  &:hover {
+    background: #F0F0F0;
+    transform: translateY(-2px);
+  }
+  
+  @media (min-width: 768px) {
+    max-width: 450px;
+    padding: 20px;
+    font-size: 20px;
+  }
+`;
+
+// Estilos para el modal de reporte de problema
+const ProblemReportModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #70C2B8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 4000;
+  padding: 20px;
+  overflow-y: auto;
+  
+  @media (min-width: 768px) {
+    padding: 40px;
+  }
+`;
+
+const ProblemReportCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
+  @media (min-width: 768px) {
+    padding: 40px;
+    max-width: 600px;
+  }
+`;
+
+const ProblemReportTitle = styled.div`
+  color: #2F6E62;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  text-align: center;
+  border-bottom: 2px solid #2F6E62;
+  padding-bottom: 15px;
+  
+  @media (min-width: 768px) {
+    font-size: 24px;
+  }
+`;
+
+const ProblemTypeLabel = styled.div`
+  color: #2F6E62;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  
+  @media (min-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
+const ProblemTypeOption = styled.button<{ selected?: boolean }>`
+  width: 100%;
+  background: ${props => props.selected ? '#E8F5E8' : 'white'};
+  border: 2px solid ${props => props.selected ? '#2F6E62' : '#E0E0E0'};
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background: #F0F0F0;
+    border-color: #2F6E62;
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #2F6E62;
+  }
+  
+  span {
+    color: #2F6E62;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+    
+    @media (min-width: 768px) {
+      font-size: 18px;
+    }
+  }
+`;
+
+const MessageInput = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  padding: 15px;
+  border: 2px solid #E0E0E0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 20px;
+  
+  &:focus {
+    outline: none;
+    border-color: #2F6E62;
+  }
+  
+  &::placeholder {
+    color: #999;
+  }
+  
+  @media (min-width: 768px) {
+    font-size: 18px;
+    min-height: 150px;
+  }
+`;
+
+const SendButton = styled.button`
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  background: #2F6E62;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  
+  &:hover {
+    background: #1F4E42;
+    transform: translateY(-2px);
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 20px;
+    font-size: 20px;
+  }
+`;
+
+const ProblemReportBackButton = styled.button`
+  width: 100%;
+  max-width: 400px;
+  padding: 18px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid #2F6E62;
+  background: white;
+  color: #2F6E62;
+  
+  &:hover {
+    background: #F0F0F0;
+    transform: translateY(-2px);
+  }
+  
+  @media (min-width: 768px) {
+    max-width: 450px;
+    padding: 20px;
+    font-size: 20px;
+  }
+`;
+
 interface CustomerSupportModalProps {
   onClose: () => void;
 }
@@ -589,7 +892,11 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   const { user } = useAuth();
   const [showFAQ, setShowFAQ] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [showTechnicianContact, setShowTechnicianContact] = useState(false);
+  const [showProblemReport, setShowProblemReport] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<string>('');
+  const [selectedProblemType, setSelectedProblemType] = useState<string>('');
+  const [problemMessage, setProblemMessage] = useState<string>('');
   
   // Obtener el nombre del usuario desde el contexto de autenticación
   const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
@@ -599,7 +906,7 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   };
 
   const handleReportProblem = () => {
-    alert('Abriendo formulario de reporte de problema');
+    setShowProblemReport(true);
   };
 
   const handleFAQClose = () => {
@@ -618,6 +925,8 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
       setShowDetail(true);
     } else if (question === '¿Cómo tomar una buena foto?') {
       setShowDetail(true);
+    } else if (question === '¿Cómo contactar un técnico?') {
+      setShowTechnicianContact(true);
     } else {
       // Para las otras preguntas, mostrar alert temporal
       alert(`Pregunta: ${question}\n\nEsta funcionalidad se implementará próximamente.`);
@@ -626,6 +935,34 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
 
   const handleBackToFAQ = () => {
     setShowDetail(false);
+  };
+
+  const handleTechnicianContact = () => {
+    setShowTechnicianContact(true);
+  };
+
+  const handleBackToFAQFromTechnician = () => {
+    setShowTechnicianContact(false);
+  };
+
+  const handleBackToSupport = () => {
+    setShowProblemReport(false);
+  };
+
+  const handleSendReport = () => {
+    if (!selectedProblemType) {
+      alert('Por favor selecciona un tipo de problema');
+      return;
+    }
+    if (!problemMessage.trim()) {
+      alert('Por favor escribe un mensaje describiendo el problema');
+      return;
+    }
+    
+    alert('Reporte enviado exitosamente');
+    setShowProblemReport(false);
+    setSelectedProblemType('');
+    setProblemMessage('');
   };
 
   return (
@@ -844,6 +1181,100 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
             Regresar
           </DetailBackButton>
         </DetailModal>
+      )}
+
+      {/* Modal de Contacto Técnico */}
+      {showTechnicianContact && (
+        <TechnicianContactModal>
+          <TechnicianCloseButton onClick={handleBackToFAQFromTechnician}>
+            <FiX />
+          </TechnicianCloseButton>
+          
+          <UserSection>
+            <Avatar>
+              <UserAvatarSVG />
+            </Avatar>
+            <Username>{userName}</Username>
+          </UserSection>
+          
+          <TechnicianCard>
+            <TechnicianTitle>
+              <FiPhone />
+              <h2>¿Cómo contactar un técnico?</h2>
+            </TechnicianTitle>
+            
+            <TechnicianContent>
+              <p>
+                Si tienes problemas con la aplicación o necesitas ayuda para analizar tus imágenes, puedes comunicarte con nuestro equipo técnico. Llámanos o escríbenos al 7638-4801, o envía un correo a agroiakey@gmail.com.
+              </p>
+              
+              <p>
+                Recuerda incluir tu nombre, el problema que presentas y una breve descripción de lo que sucede, para que podamos ayudarte más rápido. Cuando termines, presiona el botón "Regresar" para volver a la pestaña de Preguntas Frecuentes.
+              </p>
+            </TechnicianContent>
+          </TechnicianCard>
+          
+          <TechnicianBackButton onClick={handleBackToFAQFromTechnician}>
+            Regresar
+          </TechnicianBackButton>
+        </TechnicianContactModal>
+      )}
+
+      {/* Modal de Reporte de Problema */}
+      {showProblemReport && (
+        <ProblemReportModal>
+          <UserSection>
+            <Avatar>
+              <UserAvatarSVG />
+            </Avatar>
+            <Username>{userName}</Username>
+          </UserSection>
+          
+          <ProblemReportCard>
+            <ProblemReportTitle>Reportar un problema</ProblemReportTitle>
+            
+            <ProblemTypeLabel>Seleccione el tipo de problema:</ProblemTypeLabel>
+            
+            <ProblemTypeOption 
+              selected={selectedProblemType === 'detection'}
+              onClick={() => setSelectedProblemType('detection')}
+            >
+              <FiAlertTriangle />
+              <span>Error en detección</span>
+            </ProblemTypeOption>
+            
+            <ProblemTypeOption 
+              selected={selectedProblemType === 'app'}
+              onClick={() => setSelectedProblemType('app')}
+            >
+              <FiSmartphone />
+              <span>App no funciona</span>
+            </ProblemTypeOption>
+            
+            <ProblemTypeOption 
+              selected={selectedProblemType === 'other'}
+              onClick={() => setSelectedProblemType('other')}
+            >
+              <FiMessageCircle />
+              <span>Otra consulta</span>
+            </ProblemTypeOption>
+            
+            <MessageInput
+              placeholder="Escribe mensaje"
+              value={problemMessage}
+              onChange={(e) => setProblemMessage(e.target.value)}
+            />
+            
+            <SendButton onClick={handleSendReport}>
+              <FiSend />
+              Enviar
+            </SendButton>
+          </ProblemReportCard>
+          
+          <ProblemReportBackButton onClick={handleBackToSupport}>
+            Regresar
+          </ProblemReportBackButton>
+        </ProblemReportModal>
       )}
     </Modal>
   );

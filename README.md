@@ -13,13 +13,14 @@
 cd backend
 npm install
 
-cd ../frontend
+cd frontend
 npm install
 ```
 
 ### 2. Configurar Variables de Entorno
 
 **Crear archivos .env:**
+dichos archivos se encontraran en un .txt el cual tendra las indicaciones a seguir se haran llegar por correo 
 
 **Backend** (`backend/.env`):
 ```env

@@ -477,8 +477,16 @@ export function HistoryModal({ onClose }: HistoryModalProps) {
       setError(null);
       console.log('🔍 HistoryModal - Cargando historial...');
       const result = await historyService.getHistory(1, 50); // Cargar más elementos
-      console.log('📊 HistoryModal - Resultado recibido:', result);
-      console.log('📊 HistoryModal - Historial a establecer:', result.history);
+      console.log('📊 HistoryModal - Resultado recibido:', {
+        totalItems: result.history.length,
+        pagination: result.pagination
+      });
+      console.log('📊 HistoryModal - Historial a establecer:', result.history.map(item => ({
+        id: item.id,
+        hasPest: item.analysisResult.hasPest,
+        detections: item.analysisResult.detections.length,
+        imageDataSize: item.imageData?.length || 0
+      })));
       console.log('📊 HistoryModal - Tipo de result.history:', typeof result.history, Array.isArray(result.history));
       setHistory([...result.history]); // Forzar nueva referencia
       console.log('✅ HistoryModal - Estado history actualizado');

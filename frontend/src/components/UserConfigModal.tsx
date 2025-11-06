@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { FiUser, FiCamera, FiLock, FiHeadphones, FiX } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
+import { FiUser, FiLock, FiHeadphones, FiX } from 'react-icons/fi';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CustomerSupportModal } from './CustomerSupportModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -503,10 +503,6 @@ export function UserConfigModal({ onClose }: UserConfigModalProps) {
     setPassword('');
   };
 
-  const handleChangePhoto = () => {
-    alert('Funcionalidad de cambiar foto de perfil');
-  };
-
   const handleChangePassword = () => {
     setShowChangePassword(true);
   };
@@ -610,12 +606,6 @@ export function UserConfigModal({ onClose }: UserConfigModalProps) {
             <FiUser />
           </IconWrapper>
           <span>Cambiar nombre de usuario</span>
-        </OptionButton>
-        <OptionButton onClick={handleChangePhoto}>
-          <IconWrapper>
-            <FiCamera />
-          </IconWrapper>
-          <span>Cambiar foto de perfil</span>
         </OptionButton>
         <OptionButton onClick={handleChangePassword}>
           <IconWrapper>

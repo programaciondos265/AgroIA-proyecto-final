@@ -29,13 +29,16 @@ const Container = styled.div`
 
 const Header = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 20px;
   position: relative;
+  gap: 20px;
   
   @media (min-width: 768px) {
     padding: 30px 40px;
+    gap: 30px;
   }
 `;
 
@@ -73,46 +76,6 @@ const Username = styled.div`
 
   @media (min-width: 768px) {
     font-size: 18px;
-  }
-`;
-
-const Logo = styled.div`
-  width: 80px;
-  height: 80px;
-  background: white;
-  border-radius: 50%;
-  border: 2px solid #10B981;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-
-  @media (min-width: 768px) {
-    width: 100px;
-    height: 100px;
-  }
-`;
-
-const LogoText = styled.div`
-  font-weight: bold;
-  font-size: 12px;
-  color: #2F6E62;
-  text-align: center;
-  line-height: 1.1;
-
-  @media (min-width: 768px) {
-    font-size: 14px;
-  }
-`;
-
-const LogoSubtext = styled.div`
-  font-size: 8px;
-  color: #2F6E62;
-  text-align: center;
-
-  @media (min-width: 768px) {
-    font-size: 10px;
   }
 `;
 
@@ -229,23 +192,6 @@ function UserAvatarSVG() {
     <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden>
       <circle cx="20" cy="12" r="8" fill="#FFFFFF" />
       <path d="M8 32c0-8 6-12 12-12s12 4 12 12" fill="#FFFFFF" />
-    </svg>
-  );
-}
-
-function BirdLogo() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
-      {/* Bird body */}
-      <ellipse cx="12" cy="16" rx="6" ry="4" fill="#2F6E62" />
-      {/* Bird head */}
-      <circle cx="12" cy="10" r="4" fill="#2F6E62" />
-      {/* Beak */}
-      <polygon points="12,8 10,6 14,6" fill="#F19B18" />
-      {/* Feet */}
-      <path d="M10 20l-1 2M14 20l1 2" stroke="#F19B18" strokeWidth="1.5" strokeLinecap="round" />
-      {/* Leaf */}
-      <path d="M18 8c-2 0-3 1-3 2s1 2 3 2c1 0 2-1 2-2s-1-2-2-2" fill="#10B981" />
     </svg>
   );
 }

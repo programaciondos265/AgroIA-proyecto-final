@@ -21,6 +21,52 @@ const LogoWrap = styled.div`
   margin: 12px 0 8px;
 `;
 
+const LogoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+`;
+
+const LogoCircle = styled.div`
+  width: 280px;
+  height: auto;
+  border-radius: 20px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  overflow: hidden;
+  
+  @media (min-width: 768px) {
+    width: 320px;
+  }
+`;
+
+const LogoImage = styled.img`
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 15px;
+  display: block;
+`;
+
+const BrandName = styled.div`
+  font-size: 32px;
+  font-weight: 800;
+  color: #0b3b33;
+  text-align: center;
+  letter-spacing: -0.5px;
+`;
+
+const Subtitle = styled.div`
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  margin-top: -4px;
+`;
+
 const Title = styled.h1`
   text-align: center;
   color: ${({ theme }) => theme.colors.textOnMint};
@@ -138,6 +184,42 @@ function LockIcon() {
   );
 }
 
+function BirdLogo() {
+  return (
+    <svg width="80" height="80" viewBox="0 0 100 100" aria-hidden>
+      {/* Logo del pájaro - Cuerpo negro/gris oscuro */}
+      <ellipse cx="42" cy="58" rx="14" ry="10" fill="#2a2a2a" />
+      {/* Cabeza del pájaro - más grande y redondeada */}
+      <circle cx="40" cy="30" r="14" fill="#2a2a2a" />
+      {/* Alas pequeñas visibles */}
+      <ellipse cx="30" cy="55" rx="8" ry="5" fill="#333" transform="rotate(-20 30 55)" />
+      <ellipse cx="50" cy="55" rx="8" ry="5" fill="#333" transform="rotate(20 50 55)" />
+      {/* Ojos grandes blancos con expresión amigable */}
+      <circle cx="35" cy="28" r="7" fill="#fff" />
+      <circle cx="45" cy="28" r="7" fill="#fff" />
+      {/* Pupilas negras pequeñas */}
+      <circle cx="35" cy="28" r="3" fill="#000" />
+      <circle cx="45" cy="28" r="3" fill="#000" />
+      {/* Pico naranja vibrante */}
+      <polygon points="40,22 35,16 45,16" fill="#FF6B35" />
+      {/* Patas naranjas con tres dedos cada una */}
+      <path d="M 35 68 L 33 75 L 32 75 M 35 68 L 35 75 M 35 68 L 37 75 L 38 75" stroke="#FF6B35" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M 49 68 L 47 75 L 46 75 M 49 68 L 49 75 M 49 68 L 51 75 L 52 75" stroke="#FF6B35" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      {/* Hoja verde a la derecha del pájaro, ligeramente debajo */}
+      <path 
+        d="M 68 52 Q 72 48 76 52 Q 72 56 68 60 Q 64 56 68 52 Z" 
+        fill="#10B981" 
+      />
+      <path 
+        d="M 68 52 L 68 60" 
+        stroke="#0ea571" 
+        strokeWidth="2" 
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -191,10 +273,20 @@ export function Login() {
     <Page>
       <Shell>
         <LogoWrap>
-          {/* Placeholder logo area to mimic the mock spacing */}
-          <div style={{ width: 180, height: 120, borderRadius: 20, background: '#fff', display: 'grid', placeItems: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.12)' }}>
-            <div style={{ color: '#2F6E62', fontWeight: 800 }}>AgroIA</div>
-          </div>
+          <LogoCircle>
+            <LogoImage 
+              src="/logo.jpg" 
+              alt="AgroIA - Detección de plagas"
+              onError={(e) => {
+                // Si el logo JPG no carga, ocultar el contenedor
+                const target = e.target as HTMLImageElement;
+                const container = target.parentElement;
+                if (container) {
+                  container.style.display = 'none';
+                }
+              }}
+            />
+          </LogoCircle>
         </LogoWrap>
         <Title>Bienvenido</Title>
         <Card as="form" onSubmit={handleSubmit}>

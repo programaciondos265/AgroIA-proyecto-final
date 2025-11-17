@@ -4,6 +4,7 @@ import { FiUser, FiClock, FiAlertTriangle, FiSave, FiCamera, FiHome, FiX } from 
 import { useState } from 'react';
 import { UserConfigModal } from './UserConfigModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Modal = styled.div`
   position: fixed;
@@ -382,6 +383,7 @@ interface AnalysisModalProps {
 export function AnalysisModal({ result, onClose, imageData, onSave, timestamp }: AnalysisModalProps) {
   const [showUserConfig, setShowUserConfig] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Obtener el nombre del usuario desde el contexto de autenticación
   const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
@@ -411,10 +413,17 @@ export function AnalysisModal({ result, onClose, imageData, onSave, timestamp }:
 
   const handleRetake = () => {
     onClose();
+    navigate('/dashboard');
   };
 
   const handleGoHome = () => {
     onClose();
+    navigate('/dashboard');
+  };
+
+  const handleClose = () => {
+    onClose();
+    navigate('/dashboard');
   };
 
   // Obtener datos del resultado
@@ -431,7 +440,7 @@ export function AnalysisModal({ result, onClose, imageData, onSave, timestamp }:
   return (
     <Modal>
       <Container>
-        <CloseButton onClick={onClose}>
+        <CloseButton onClick={handleClose}>
           <FiX />
         </CloseButton>
 

@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { FiX, FiHelpCircle, FiSend, FiPhone, FiMail, FiZap, FiCamera, FiChevronRight, FiAlertTriangle, FiSmartphone, FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Modal = styled.div`
   position: fixed;
@@ -22,33 +23,7 @@ const Modal = styled.div`
   }
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: #2F6E62;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: #1F4E42;
-    transform: scale(1.05);
-  }
-  
-  @media (min-width: 768px) {
-    width: 60px;
-    height: 60px;
-    font-size: 28px;
-  }
-`;
+// CloseButton removido - no se usa en el modal principal
 
 const LogoContainer = styled.div`
   position: absolute;
@@ -405,13 +380,13 @@ const FAQBackButton = styled.button`
   font-size: 18px;
   font-weight: 600;
   transition: all 0.3s ease;
-  border: 2px solid white;
+  border: 2px solid #2F6E62;
   margin-bottom: 15px;
-  background: transparent;
-  color: white;
+  background: white;
+  color: #2F6E62;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #F0F0F0;
     transform: translateY(-2px);
   }
   
@@ -524,13 +499,13 @@ const DetailBackButton = styled.button`
   font-size: 18px;
   font-weight: 600;
   transition: all 0.3s ease;
-  border: 2px solid white;
+  border: 2px solid #2F6E62;
   margin-bottom: 15px;
-  background: transparent;
-  color: white;
+  background: white;
+  color: #2F6E62;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #F0F0F0;
     transform: translateY(-2px);
   }
   
@@ -890,6 +865,7 @@ interface CustomerSupportModalProps {
 
 export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showFAQ, setShowFAQ] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [showTechnicianContact, setShowTechnicianContact] = useState(false);
@@ -900,6 +876,17 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
   
   // Obtener el nombre del usuario desde el contexto de autenticación
   const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+
+  const handleBack = () => {
+    onClose(); // Cerrar el modal (esto también cierra el UserConfigModal)
+    // Si estamos en /scan, regresar a /scan, si no, quedarse en /dashboard
+    const currentPath = window.location.pathname;
+    if (currentPath === '/scan') {
+      // Ya estamos en scan, no necesitamos navegar
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   const handleFAQ = () => {
     setShowFAQ(true);
@@ -1009,17 +996,13 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
         </ContactInfo>
       </Card>
       
-      <ActionButton onClick={onClose}>
+      <ActionButton onClick={handleBack}>
         Regresar
       </ActionButton>
 
       {/* Modal de Preguntas Frecuentes */}
       {showFAQ && (
         <FAQModal>
-          <FAQCloseButton onClick={handleFAQClose}>
-            <FiX />
-          </FAQCloseButton>
-          
           <UserSection>
             <Avatar>
               <UserAvatarSVG />
@@ -1080,10 +1063,6 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
       {/* Modal de Respuesta Detallada */}
       {showDetail && (
         <DetailModal>
-          <DetailCloseButton onClick={handleDetailClose}>
-            <FiX />
-          </DetailCloseButton>
-          
           <UserSection>
             <Avatar>
               <UserAvatarSVG />
@@ -1186,10 +1165,6 @@ export function CustomerSupportModal({ onClose }: CustomerSupportModalProps) {
       {/* Modal de Contacto Técnico */}
       {showTechnicianContact && (
         <TechnicianContactModal>
-          <TechnicianCloseButton onClick={handleBackToFAQFromTechnician}>
-            <FiX />
-          </TechnicianCloseButton>
-          
           <UserSection>
             <Avatar>
               <UserAvatarSVG />

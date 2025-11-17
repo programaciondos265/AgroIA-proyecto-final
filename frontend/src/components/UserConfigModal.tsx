@@ -637,15 +637,11 @@ export function UserConfigModal({ onClose }: UserConfigModalProps) {
       {showChangeUsername && (
         <ChangeUsernameModal>
           <ChangeUsernameCard>
-            <CloseIconButton onClick={handleCloseChangeUsername}>
-              <FiX />
-            </CloseIconButton>
-            
             <ChangeUsernameHeader>
               <ChangeUsernameIconWrapper>
                 <FiUser />
               </ChangeUsernameIconWrapper>
-              <ChangeUsernameTitle>Cambiar nombre de usuario:</ChangeUsernameTitle>
+              <ChangeUsernameTitle>Cambiar nombre de usuario</ChangeUsernameTitle>
             </ChangeUsernameHeader>
             
             <FormLabel>Correo</FormLabel>
@@ -727,7 +723,10 @@ export function UserConfigModal({ onClose }: UserConfigModalProps) {
 
       {/* Modal de atención al cliente */}
       {showCustomerSupport && (
-        <CustomerSupportModal onClose={() => setShowCustomerSupport(false)} />
+        <CustomerSupportModal onClose={() => {
+          setShowCustomerSupport(false);
+          onClose(); // Cerrar también el modal de configuración
+        }} />
       )}
     </Modal>
   );

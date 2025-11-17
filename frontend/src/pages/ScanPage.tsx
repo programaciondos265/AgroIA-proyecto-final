@@ -208,6 +208,7 @@ export function ScanPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Asegurar que la cámara siempre esté activa al montar el componente
     openCamera();
     
     // Limpieza al desmontar el componente
@@ -233,6 +234,9 @@ export function ScanPage() {
       // Detener cámara anterior si existe
       stopCamera();
       
+      // Pequeño delay para asegurar que la cámara anterior se detuvo completamente
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'environment' } // Usar cámara trasera en móviles
       });
@@ -240,10 +244,21 @@ export function ScanPage() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsCameraOpen(true);
+        
+        // Asegurar que el video se reproduzca
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(err => {
+              console.error('Error al reproducir video:', err);
+            });
+          }
+        };
+        
         console.log('🎥 Cámara iniciada');
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
+      setIsCameraOpen(false);
       alert('No se pudo acceder a la cámara. Por favor, permite el acceso a la cámara.');
     }
   };
@@ -339,14 +354,17 @@ export function ScanPage() {
     setCapturedImage(null);
     setAnalysisResult(null);
     setPhotoTimestamp(null);
-    // NO reactivar la cámara automáticamente
-    // El usuario tendrá que presionar el botón de captura para activarla
-    stopCamera();
-    console.log('🔄 Listo para nueva foto - cámara apagada');
+    // Reactivar la cámara automáticamente para tomar otra foto
+    openCamera();
+    console.log('🔄 Listo para nueva foto - cámara reactivada');
   };
 
   const goBack = () => {
     stopCamera(); // Detener cámara antes de navegar
+    // Limpiar estados al salir
+    setCapturedImage(null);
+    setAnalysisResult(null);
+    setPhotoTimestamp(null);
     navigate('/dashboard');
   };
 
@@ -354,9 +372,9 @@ export function ScanPage() {
     setAnalysisResult(null);
     setCapturedImage(null);
     setPhotoTimestamp(null);
-    // NO reactivar la cámara automáticamente
-    stopCamera();
-    console.log('🔍 Modal cerrado - cámara apagada');
+    // Reactivar la cámara automáticamente al cerrar el modal
+    openCamera();
+    console.log('🔍 Modal cerrado - cámara reactivada');
   };
 
   const handleSaveAndGoToHistory = () => {
@@ -373,17 +391,24 @@ export function ScanPage() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Detener la cámara cuando se selecciona una imagen de galería
+      stopCamera();
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setCapturedImage(result);
-        setIsCameraOpen(false);
         
         // Para imágenes de galería, no establecer photoTimestamp
         // porque no sabemos cuándo se tomó originalmente
         setPhotoTimestamp(null);
       };
       reader.readAsDataURL(file);
+      
+      // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 

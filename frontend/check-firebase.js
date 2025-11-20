@@ -14,7 +14,6 @@ console.log('\n📋 Configuración de Firebase:');
 console.log('API Key:', config.apiKey ? '✅ Configurada' : '❌ Faltante');
 console.log('Auth Domain:', config.authDomain ? '✅ Configurada' : '❌ Faltante');
 console.log('Project ID:', config.projectId ? '✅ Configurada' : '❌ Faltante');
-console.log('Storage Bucket:', config.storageBucket ? '✅ Configurada' : '❌ Faltante');
 console.log('Messaging Sender ID:', config.messagingSenderId ? '✅ Configurada' : '❌ Faltante');
 console.log('App ID:', config.appId ? '✅ Configurada' : '❌ Faltante');
 

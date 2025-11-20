@@ -1,7 +1,8 @@
 import { firestore } from '../config/firebase';
+import { isFirestoreAvailable } from '../utils/firebaseUtils';
 
 // Verificar que Firebase esté inicializado
-if (!firestore) {
+if (!isFirestoreAvailable()) {
   console.error('❌ Firebase Firestore no está inicializado. Por favor configura las variables de entorno.');
 }
 
@@ -71,7 +72,12 @@ export interface UserStats {
 
 // Clase para manejar usuarios en Firestore
 export class UserModel {
-  private static collection = firestore.collection('users');
+  private static getCollection() {
+    if (!isFirestoreAvailable()) {
+      throw new Error('Firebase no está configurado. Por favor configura las variables de entorno.');
+    }
+    return firestore!.collection('users');
+  }
 
   // Crear usuario
   static async create(userData: CreateUserData): Promise<User> {
@@ -87,7 +93,7 @@ export class UserModel {
       isActive: true
     };
 
-    const docRef = await this.collection.add(user);
+    const docRef = await this.getCollection().add(user);
     const createdUser = { ...user, uid: docRef.id };
     
     // Actualizar el documento con el UID
@@ -98,7 +104,7 @@ export class UserModel {
 
   // Buscar usuario por UID
   static async findByUid(uid: string): Promise<User | null> {
-    const doc = await this.collection.doc(uid).get();
+    const doc = await this.getCollection().doc(uid).get();
     if (!doc.exists) return null;
     
     return { uid: doc.id, ...doc.data() } as User;
@@ -106,7 +112,7 @@ export class UserModel {
 
   // Buscar usuario por email
   static async findByEmail(email: string): Promise<User | null> {
-    const snapshot = await this.collection.where('email', '==', email).limit(1).get();
+    const snapshot = await this.getCollection().where('email', '==', email).limit(1).get();
     if (snapshot.empty) return null;
     
     const doc = snapshot.docs[0];
@@ -115,7 +121,7 @@ export class UserModel {
 
   // Actualizar usuario
   static async update(uid: string, updates: Partial<User>): Promise<User | null> {
-    const docRef = this.collection.doc(uid);
+    const docRef = this.getCollection().doc(uid);
     const updateData = {
       ...updates,
       updatedAt: new Date()
@@ -127,7 +133,7 @@ export class UserModel {
 
   // Actualizar última sesión
   static async updateLastLogin(uid: string): Promise<void> {
-    await this.collection.doc(uid).update({
+    await this.getCollection().doc(uid).update({
       lastLoginAt: new Date(),
       updatedAt: new Date()
     });
@@ -136,7 +142,7 @@ export class UserModel {
   // Eliminar usuario
   static async delete(uid: string): Promise<boolean> {
     try {
-      await this.collection.doc(uid).delete();
+      await this.getCollection().doc(uid).delete();
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -146,7 +152,7 @@ export class UserModel {
 
   // Obtener todos los usuarios (para admin)
   static async getAllUsers(): Promise<User[]> {
-    const snapshot = await this.collection.get();
+    const snapshot = await this.getCollection().get();
     return snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as User));
   }
 }
@@ -154,10 +160,10 @@ export class UserModel {
 // Clase para manejar análisis de plagas
 export class PestAnalysisModel {
   private static get collection() {
-    if (!firestore) {
+    if (!isFirestoreAvailable()) {
       throw new Error('Firebase Firestore no está disponible');
     }
-    return firestore.collection('pestAnalyses');
+    return firestore!.collection('pestAnalyses');
   }
 
   // Crear análisis
@@ -168,8 +174,7 @@ export class PestAnalysisModel {
       hasAnalysisResult: !!analysisData.analysisResult 
     });
     
-    if (!firestore) {
-      console.error('❌ Firebase Firestore no está disponible');
+    if (!isFirestoreAvailable()) {
       throw new Error('Firebase no está configurado. Por favor configura las variables de entorno.');
     }
     
@@ -198,7 +203,10 @@ export class PestAnalysisModel {
       };
 
       console.log('📊 Creando documento en Firestore...');
-      const docRef = await firestore.collection('pestAnalyses').add(analysis);
+      if (!isFirestoreAvailable()) {
+        throw new Error('Firebase no está configurado. Por favor configura las variables de entorno.');
+      }
+      const docRef = await firestore!.collection('pestAnalyses').add(analysis);
       console.log('✅ Documento creado con ID:', docRef.id);
       
       return { id: docRef.id, ...analysis };
@@ -220,14 +228,13 @@ export class PestAnalysisModel {
   static async findByUserId(userId: string, limit: number = 50): Promise<PestAnalysis[]> {
     console.log('🔍 PestAnalysisModel.findByUserId - userId:', userId, 'limit:', limit);
     
-    if (!firestore) {
-      console.error('❌ Firebase Firestore no está disponible');
+    if (!isFirestoreAvailable()) {
       throw new Error('Firebase no está configurado. Por favor configura las variables de entorno.');
     }
     
     try {
       // Consulta simple sin orderBy para evitar necesidad de índice compuesto
-      const snapshot = await firestore.collection('pestAnalyses')
+      const snapshot = await firestore!.collection('pestAnalyses')
         .where('userId', '==', userId)
         .limit(limit * 2) // Obtener más documentos para ordenar en memoria
         .get();

@@ -123,7 +123,7 @@ const PrimaryBtn = styled.button`
   }
   
   &:disabled {
-    background: #9ca3af;
+    background: ${({ theme }) => theme.colors.disabled};
     cursor: not-allowed;
     transform: none;
   }
@@ -149,22 +149,22 @@ const OutlineBtn = styled.button`
 `;
 
 const ErrorMsg = styled.div`
-  color: #b91c1c; 
-  background: #fee2e2; 
-  border: 1px solid #fecaca; 
+  color: #b91c1c;
+  background: ${({ theme }) => theme.colors.errorLight};
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
   border-radius: 10px;
-  padding: 10px 12px; 
-  margin-bottom: 12px; 
+  padding: 10px 12px;
+  margin-bottom: 12px;
   font-size: 14px;
 `;
 
 const SuccessMsg = styled.div`
-  color: #059669; 
-  background: #d1fae5; 
-  border: 1px solid #a7f3d0; 
+  color: #059669;
+  background: ${({ theme }) => theme.colors.successLight};
+  border: 1px solid #a7f3d0;
   border-radius: 10px;
-  padding: 10px 12px; 
-  margin-bottom: 12px; 
+  padding: 10px 12px;
+  margin-bottom: 12px;
   font-size: 14px;
 `;
 

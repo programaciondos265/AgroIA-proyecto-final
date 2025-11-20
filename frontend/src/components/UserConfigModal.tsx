@@ -12,7 +12,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8; /* Fondo verde claro igual al dashboard */
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +29,7 @@ const CloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   width: 50px;
   height: 50px;
@@ -43,7 +43,7 @@ const CloseButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -98,7 +98,7 @@ const Avatar = styled.div`
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -189,7 +189,7 @@ const IconWrapper = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #E8E8E8;
+  background: ${({ theme }) => theme.colors.grayLight};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,7 +211,7 @@ const OptionButton = styled.button`
   margin-bottom: 10px;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
   }
   
   &:last-child {
@@ -249,11 +249,11 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
   margin-bottom: 15px;
   
   ${props => props.variant === 'primary' ? `
-    background: #2F6E62;
+    background: ${({ theme }) => theme.colors.primary};
     color: white;
     
     &:hover {
-      background: #1F4E42;
+      background: ${({ theme }) => theme.colors.primaryDarker};
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(47, 110, 98, 0.3);
     }
@@ -263,7 +263,7 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
     border: 2px solid #2F6E62;
     
     &:hover {
-      background: #F0F0F0;
+      background: ${({ theme }) => theme.colors.grayLighter};
       transform: translateY(-2px);
     }
   `}
@@ -313,7 +313,7 @@ const ChangeUsernameIconWrapper = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #E8E8E8;
+  background: ${({ theme }) => theme.colors.grayLight};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,7 +350,7 @@ const CloseIconButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
   }
   
   svg {
@@ -389,7 +389,7 @@ const FormInput = styled.input`
 
 const ErrorMessage = styled.div`
   color: #b91c1c;
-  background: #fee2e2;
+  background: ${({ theme }) => theme.colors.errorLight};
   border: 1px solid #fecaca;
   border-radius: 10px;
   padding: 10px 12px;
@@ -400,7 +400,7 @@ const ErrorMessage = styled.div`
 const SaveButton = styled.button`
   width: 100%;
   padding: 15px;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   color: white;
   border: none;
   border-radius: 12px;
@@ -410,12 +410,12 @@ const SaveButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover:not(:disabled) {
-    background: #5FA89F;
+    background: ${({ theme }) => theme.colors.primaryLight};
     transform: translateY(-2px);
   }
   
   &:disabled {
-    background: #9CA3AF;
+    background: ${({ theme }) => theme.colors.disabled};
     cursor: not-allowed;
     transform: none;
   }

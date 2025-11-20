@@ -7,6 +7,7 @@ import {
   deleteOldAnalyses,
   uploadMiddleware
 } from '../controllers/pestAnalysisController';
+import { validatePagination } from '../middleware/validation';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ const router = Router();
 router.post('/analyze', uploadMiddleware, analyzePestImage);
 
 // Obtener historial de análisis (requiere autenticación)
-router.get('/history', getAnalysisHistory);
+router.get('/history', validatePagination, getAnalysisHistory);
 
 // Obtener estadísticas de análisis (requiere autenticación)
 router.get('/stats', getAnalysisStats);

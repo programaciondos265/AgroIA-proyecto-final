@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { AnalysisHistoryItem } from '../services/historyService';
 import { FiClock, FiAlertTriangle, FiTrash2, FiHome, FiX } from 'react-icons/fi';
 import { useState } from 'react';
+import { formatDateTime } from '../utils/dateUtils';
 
 const Modal = styled.div`
   position: fixed;
@@ -9,7 +10,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -22,7 +23,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   padding: 20px;
   
   @media (min-width: 768px) {
@@ -59,7 +60,7 @@ const Avatar = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: #3F8C82;
+  background: ${({ theme }) => theme.colors.avatarBg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +93,7 @@ const CloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   color: white;
   font-size: 24px;
@@ -107,7 +108,7 @@ const CloseButton = styled.button`
   z-index: 10;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -182,7 +183,7 @@ const TitleText = styled.h2`
 const Separator = styled.div`
   width: 100%;
   height: 2px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   margin-bottom: 25px;
 `;
 
@@ -190,7 +191,7 @@ const ImagePlaceholder = styled.div`
   width: 100%;
   max-width: 280px;
   height: 200px;
-  background: #E0E0E0;
+  background: ${({ theme }) => theme.colors.borderLight};
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -292,7 +293,7 @@ const ProgressText = styled.span`
 `;
 
 const DeleteButton = styled.button`
-  background: #DC3545;
+  background: ${({ theme }) => theme.colors.errorDark};
   color: white;
   border: none;
   padding: 14px 28px;
@@ -306,7 +307,7 @@ const DeleteButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #C82333;
+    background: ${({ theme }) => theme.colors.errorDarker};
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
   }
@@ -335,7 +336,7 @@ const BottomButton = styled.button`
   margin-top: 20px;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -385,7 +386,7 @@ const ConfirmIcon = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: #DC3545;
+  background: ${({ theme }) => theme.colors.errorDark};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -408,7 +409,7 @@ const ConfirmMessage = styled.p`
 
 const ConfirmItemPreview = styled.div`
   width: 100%;
-  background: #F5F5F5;
+  background: ${({ theme }) => theme.colors.grayLightest};
   border-radius: 12px;
   padding: 15px;
   display: flex;
@@ -464,14 +465,14 @@ const CancelButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
   }
 `;
 
 const ConfirmDeleteButton = styled.button`
   flex: 1;
   padding: 12px;
-  background: #DC3545;
+  background: ${({ theme }) => theme.colors.errorDark};
   color: white;
   border: none;
   border-radius: 12px;
@@ -481,7 +482,7 @@ const ConfirmDeleteButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #C82333;
+    background: ${({ theme }) => theme.colors.errorDarker};
   }
 `;
 
@@ -503,17 +504,6 @@ interface HistoryDetailModalProps {
 
 export function HistoryDetailModal({ item, onClose, onDelete, onOpenUserConfig }: HistoryDetailModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const formatDateTime = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return date.toLocaleDateString('es-ES', options);
-  };
 
   const getPestName = (item: AnalysisHistoryItem) => {
     if (item.result.detections && item.result.detections.length > 0) {

@@ -10,7 +10,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -69,7 +69,7 @@ const Avatar = styled.div`
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,7 +145,7 @@ const OptionButton = styled.button`
   margin-bottom: 10px;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
   }
   
   &:last-child {
@@ -168,7 +168,7 @@ const IconWrapper = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #E8E8E8;
+  background: ${({ theme }) => theme.colors.grayLight};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,7 +229,7 @@ const ActionButton = styled.button`
   border: 2px solid #2F6E62;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -247,7 +247,7 @@ const FAQModal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -264,7 +264,7 @@ const FAQCloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   width: 50px;
   height: 50px;
@@ -277,7 +277,7 @@ const FAQCloseButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -329,7 +329,7 @@ const FAQItem = styled.button`
   margin-bottom: 10px;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
   }
   
   &:last-child {
@@ -341,7 +341,7 @@ const FAQIconWrapper = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #E8E8E8;
+  background: ${({ theme }) => theme.colors.grayLight};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,7 +386,7 @@ const FAQBackButton = styled.button`
   color: #2F6E62;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -404,7 +404,7 @@ const DetailModal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -421,7 +421,7 @@ const DetailCloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   width: 50px;
   height: 50px;
@@ -434,7 +434,7 @@ const DetailCloseButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -505,7 +505,7 @@ const DetailBackButton = styled.button`
   color: #2F6E62;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -563,7 +563,7 @@ const TechnicianContactModal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -580,7 +580,7 @@ const TechnicianCloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   width: 50px;
   height: 50px;
@@ -593,7 +593,7 @@ const TechnicianCloseButton = styled.button`
   transition: all 0.3s ease;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -670,7 +670,7 @@ const TechnicianBackButton = styled.button`
   color: #2F6E62;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -688,7 +688,7 @@ const ProblemReportModal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -755,7 +755,7 @@ const ProblemTypeOption = styled.button<{ selected?: boolean }>`
   cursor: pointer;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     border-color: #2F6E62;
   }
   
@@ -811,7 +811,7 @@ const SendButton = styled.button`
   font-weight: 600;
   transition: all 0.3s ease;
   border: none;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   color: white;
   display: flex;
   align-items: center;
@@ -820,7 +820,7 @@ const SendButton = styled.button`
   margin-bottom: 15px;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: translateY(-2px);
   }
   
@@ -848,7 +848,7 @@ const ProblemReportBackButton = styled.button`
   color: #2F6E62;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   

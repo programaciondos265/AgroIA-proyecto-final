@@ -20,16 +20,16 @@ const GoogleButton = styled.button`
   font-size: 16px;
 
   &:hover {
-    background: #f9fafb;
-    border-color: #9ca3af;
+    background: ${({ theme }) => theme.colors.surface};
+    border-color: ${({ theme }) => theme.colors.disabled};
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   &:disabled {
-    background: #f3f4f6;
-    border-color: #e5e7eb;
-    color: #9ca3af;
+    background: ${({ theme }) => theme.colors.disabledLight};
+    border-color: ${({ theme }) => theme.colors.border};
+    color: ${({ theme }) => theme.colors.disabled};
     cursor: not-allowed;
     transform: none;
     box-shadow: none;

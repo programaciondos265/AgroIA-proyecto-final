@@ -127,8 +127,13 @@ const OutlineBtn = styled.button`
 `;
 
 const ErrorMsg = styled.div`
-  color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; border-radius: 10px;
-  padding: 10px 12px; margin-bottom: 12px; font-size: 14px;
+  color: #b91c1c;
+  background: ${({ theme }) => theme.colors.errorLight};
+  border: 1px solid ${({ theme }) => theme.colors.errorBorder};
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
 `;
 
 const LinkText = styled.button`
@@ -155,7 +160,7 @@ const Divider = styled.div`
     content: '';
     flex: 1;
     height: 1px;
-    background: #e5e7eb;
+    background: ${({ theme }) => theme.colors.border};
   }
   
   span {

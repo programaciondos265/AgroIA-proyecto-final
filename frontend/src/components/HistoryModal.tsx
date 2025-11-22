@@ -13,7 +13,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -26,7 +26,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   padding: 20px;
   
   @media (min-width: 768px) {
@@ -53,7 +53,7 @@ const Avatar = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: #3F8C82;
+  background: ${({ theme }) => theme.colors.avatarBg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,7 +176,7 @@ const HistoryItem = styled.div`
 const ImagePreview = styled.img`
   width: 80px;
   height: 80px;
-  background: #E0E0E0;
+  background: ${({ theme }) => theme.colors.borderLight};
   border-radius: 8px;
   flex-shrink: 0;
   object-fit: cover;
@@ -219,7 +219,7 @@ const ItemSubtitle = styled.div`
 `;
 
 const DeleteButton = styled.button`
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   color: white;
   width: 36px;
@@ -233,7 +233,7 @@ const DeleteButton = styled.button`
   flex-shrink: 0;
   
   &:hover {
-    background: #23564D;
+    background: ${({ theme }) => theme.colors.primaryDark};
     transform: scale(1.05);
   }
   
@@ -256,7 +256,7 @@ const BottomButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: #2F6E62;
+    background: ${({ theme }) => theme.colors.primary};
     color: white;
   }
   
@@ -285,7 +285,7 @@ const ErrorState = styled.div`
   padding: 40px 20px;
   color: #EF4444;
   font-size: 16px;
-  background: #FEF2F2;
+  background: ${({ theme }) => theme.colors.errorLight};
   border: 1px solid #FECACA;
   border-radius: 12px;
   margin: 20px 0;
@@ -329,7 +329,7 @@ const ConfirmIcon = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: #EF4444;
+  background: ${({ theme }) => theme.colors.error};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -353,7 +353,7 @@ const ConfirmMessage = styled.p`
 
 const ConfirmItemPreview = styled.div`
   width: 100%;
-  background: #F5F5F5;
+  background: ${({ theme }) => theme.colors.grayLightest};
   border-radius: 12px;
   padding: 15px;
   margin-bottom: 20px;
@@ -406,13 +406,13 @@ const CancelButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: #F5F5F5;
+    background: ${({ theme }) => theme.colors.grayLightest};
   }
 `;
 
 const ConfirmDeleteButton = styled.button`
   flex: 1;
-  background: #EF4444;
+  background: ${({ theme }) => theme.colors.error};
   color: white;
   border: none;
   padding: 14px 20px;
@@ -423,7 +423,7 @@ const ConfirmDeleteButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: #DC2626;
+    background: ${({ theme }) => theme.colors.errorDarkest};
     transform: translateY(-1px);
   }
 `;

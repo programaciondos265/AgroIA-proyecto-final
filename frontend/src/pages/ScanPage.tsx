@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Page = styled.main`
   min-height: 100vh;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   padding: 0;
   position: relative;
   display: flex;
@@ -30,7 +30,7 @@ const Container = styled.div`
 
 const CameraView = styled.div`
   flex: 1;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   position: relative;
   display: flex;
   align-items: center;

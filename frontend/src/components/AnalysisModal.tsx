@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { UserConfigModal } from './UserConfigModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatDateTime } from '../utils/dateUtils';
 
 const Modal = styled.div`
   position: fixed;
@@ -12,7 +13,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -25,7 +26,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   padding: 20px;
   
   @media (min-width: 768px) {
@@ -62,7 +63,7 @@ const Avatar = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: #3F8C82;
+  background: ${({ theme }) => theme.colors.avatarBg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,7 +89,7 @@ const CloseButton = styled.button`
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border: none;
   color: white;
   font-size: 24px;
@@ -103,7 +104,7 @@ const CloseButton = styled.button`
   z-index: 10;
   
   &:hover {
-    background: #1F4E42;
+    background: ${({ theme }) => theme.colors.primaryDarker};
     transform: scale(1.05);
   }
   
@@ -178,14 +179,14 @@ const TitleText = styled.h1`
 const Separator = styled.div`
   width: 100%;
   height: 2px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   margin-bottom: 20px;
 `;
 
 const ImagePlaceholder = styled.div`
   width: 150px;
   height: 150px;
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   border-radius: 12px;
   margin-bottom: 20px;
   display: flex;
@@ -237,7 +238,7 @@ const ProgressCircle = styled.div<{ percentage: number }>`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: conic-gradient(#70C2B8 ${({ percentage }) => percentage * 3.6}deg, #E0E0E0 0deg);
+    background: conic-gradient(${({ theme }) => theme.colors.background} ${({ percentage }) => percentage * 3.6}deg, ${({ theme }) => theme.colors.borderLight} 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,7 +301,7 @@ const SaveButton = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: #F19B18;
+    background: ${({ theme }) => theme.colors.accentOrange};
     color: white;
   }
   
@@ -312,7 +313,7 @@ const SaveButton = styled.button`
 `;
 
 const RetakeButton = styled.button`
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
   padding: 12px 20px;
@@ -352,7 +353,7 @@ const BottomButton = styled.button`
   margin-top: 20px;
   
   &:hover {
-    background: #F0F0F0;
+    background: ${({ theme }) => theme.colors.grayLighter};
     transform: translateY(-2px);
   }
   
@@ -392,17 +393,6 @@ export function AnalysisModal({ result, onClose, imageData, onSave, timestamp }:
   console.log('🔍 AnalysisModal - hasPest:', result?.hasPest);
   console.log('🔍 AnalysisModal - detections:', result?.detections);
   console.log('🔍 AnalysisModal - recommendations:', result?.recommendations);
-
-  const formatDateTime = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return date.toLocaleDateString('es-ES', options);
-  };
 
   const handleSave = () => {
     // Lógica para guardar el resultado

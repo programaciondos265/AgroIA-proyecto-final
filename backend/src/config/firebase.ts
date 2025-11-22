@@ -4,7 +4,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const serviceAccount = {
+// Verificar variables de entorno requeridas
+const requiredVars = [
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_PRIVATE_KEY_ID',
+  'FIREBASE_PRIVATE_KEY',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_CLIENT_ID',
+];
+
+const missingVars = requiredVars.filter((varName) => !process.env[varName]);
+
+const firebaseConfig = {
   type: 'service_account',
   project_id: process.env.FIREBASE_PROJECT_ID,
   private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
@@ -17,17 +28,27 @@ const serviceAccount = {
   client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
 };
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    // 👇 NADA de storageBucket aquí
-  });
-  console.log('✅ Firebase Admin inicializado (sin Storage)');
-}
+// Inicializar Firebase Admin solo si las variables están configuradas
+let auth: admin.auth.Auth | undefined;
+let firestore: admin.firestore.Firestore | undefined;
 
-const auth = admin.auth();
-const firestore = admin.firestore();
+if (missingVars.length === 0) {
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(firebaseConfig as admin.ServiceAccount),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    }
+    auth = admin.auth();
+    firestore = admin.firestore();
+    console.log('✅ Firebase Admin inicializado correctamente');
+  } catch (error) {
+    console.error('❌ Error inicializando Firebase Admin:', error);
+  }
+} else {
+  console.error('❌ Firebase Admin no inicializado - variables de entorno faltantes');
+}
 
 export { auth, firestore };
 export default admin;

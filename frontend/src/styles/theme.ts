@@ -3,20 +3,35 @@ import { createGlobalStyle } from 'styled-components';
 export const theme = {
   colors: {
     // Palette adjusted to match provided mock
-    mintBg: '#6EC1A9',
+    mintBg: '#71c3a8',
     primary: '#2F6E62',
     primaryDark: '#23564D',
+    primaryDarker: '#1F4E42',
+    primaryLight: '#5BA89A',
+    avatarBg: '#3F8C82',
     surface: '#FFFFFF',
     textOnMint: '#FFFFFF',
     textOnSurface: '#1F2A37',
     textSecondary: '#6B7280',
     muted: '#5B7A72',
     accentOrange: '#F19B18',
-    background: '#F9FAFB',
+    background: '#71c3a8',
     border: '#E5E7EB',
+    borderLight: '#E0E0E0',
+    grayLight: '#E8E8E8',
+    grayLighter: '#F0F0F0',
+    grayLightest: '#F5F5F5',
     success: '#10B981',
+    successLight: '#d1fae5',
     warning: '#F59E0B',
-    error: '#EF4444'
+    error: '#EF4444',
+    errorLight: '#fee2e2',
+    errorBorder: '#fecaca',
+    errorDark: '#DC3545',
+    errorDarker: '#C82333',
+    errorDarkest: '#DC2626',
+    disabled: '#9CA3AF',
+    disabledLight: '#f3f4f6',
   },
   radii: {
     sm: '8px',
@@ -39,7 +54,7 @@ export const GlobalStyles = createGlobalStyle`
   body {
     margin: 0;
     font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    background: #70C2B8;
+    background: ${({ theme }) => theme.colors.background};
     color: white;
     line-height: 1.4;
   }

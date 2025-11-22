@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
-import sharp from 'sharp';
-import { PestAnalysisModel, PestAnalysis } from '../models/FirebaseModels';
+import { PestAnalysisModel } from '../models/FirebaseModels';
 import { auth } from '../config/firebase';
+import { pestAnalysisService } from '../services/pestAnalysisService';
 
 // Extender el tipo Request para incluir userId y file de Multer
 interface AuthRequest extends Request {
@@ -23,155 +23,40 @@ const upload = multer({
     } else {
       cb(new Error('Solo se permiten archivos de imagen'));
     }
-  }
+  },
 });
 
 // Middleware para verificar token de Firebase
 const verifyFirebaseToken = async (req: Request, res: Response, next: any) => {
   try {
     const token = req.headers.authorization?.split('Bearer ')[1];
-    
+
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Token de autorización requerido'
+        message: 'Token de autorización requerido',
       });
     }
 
-    const decodedToken = await auth.verifyIdToken(token);
+    const decodedToken = await auth?.verifyIdToken(token);
+    if (!decodedToken) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido',
+      });
+    }
+
     (req as AuthRequest).userId = decodedToken.uid;
     next();
   } catch (error) {
     console.error('Firebase token verification error:', error);
     return res.status(401).json({
       success: false,
-      message: 'Token inválido'
+      message: 'Token inválido',
     });
   }
 };
 
-// Simulación de análisis de plagas (en producción usarías un modelo real de IA)
-async function analyzeImageForPests(imageBuffer: Buffer): Promise<PestAnalysis['analysisResult']> {
-  try {
-    // Procesar imagen con Sharp para obtener metadatos
-    const metadata = await sharp(imageBuffer).metadata();
-    
-    // Simular análisis con datos aleatorios pero realistas
-    const random = Math.random();
-    
-    const pestTypes = [
-      {
-        name: 'Pulgón',
-        description: 'Insecto pequeño que se alimenta de la savia de las plantas',
-        treatment: 'Aplicar jabón insecticida o aceite de neem',
-        severity: 'medium' as const
-      },
-      {
-        name: 'Mosca blanca',
-        description: 'Insecto volador que causa daño por succión',
-        treatment: 'Usar trampas amarillas y control biológico',
-        severity: 'high' as const
-      },
-      {
-        name: 'Araña roja',
-        description: 'Ácaro que causa manchas amarillas en las hojas',
-        treatment: 'Aumentar humedad y usar acaricidas',
-        severity: 'medium' as const
-      },
-      {
-        name: 'Oídio',
-        description: 'Hongo que forma una capa blanca en las hojas',
-        treatment: 'Aplicar fungicida de azufre',
-        severity: 'high' as const
-      },
-      {
-        name: 'Escarabajo de la patata',
-        description: 'Escarabajo que se alimenta de hojas de solanáceas',
-        treatment: 'Recolección manual y uso de Bacillus thuringiensis',
-        severity: 'medium' as const
-      }
-    ];
-
-    const detections: any[] = [];
-    
-    // Simular detección de plagas (35% de probabilidad)
-    if (random < 0.35) {
-      const pestCount = Math.floor(Math.random() * 2) + 1; // 1-2 plagas
-      
-      for (let i = 0; i < pestCount; i++) {
-        const pest = pestTypes[Math.floor(Math.random() * pestTypes.length)];
-        detections.push({
-          pestType: pest.name,
-          confidence: Math.random() * 0.3 + 0.7, // 70-100%
-          description: pest.description,
-          treatment: pest.treatment,
-          severity: pest.severity
-        });
-      }
-    }
-
-    // Análisis de calidad de imagen basado en metadatos
-    const brightness = Math.random() * 100;
-    const contrast = Math.random() * 100;
-    const quality = brightness > 50 && contrast > 40 ? 'good' : 
-                   brightness > 30 && contrast > 25 ? 'fair' : 'poor';
-
-    // Generar recomendaciones
-    const recommendations: string[] = [];
-    
-    if (detections.length > 0) {
-      recommendations.push('Se detectaron plagas en tu cultivo');
-      recommendations.push('Aplica el tratamiento recomendado lo antes posible');
-      
-      if (detections.some((d: any) => d.severity === 'high')) {
-        recommendations.push('⚠️ Plagas de alta severidad detectadas - acción inmediata requerida');
-      }
-      
-      // Recomendaciones específicas por tipo de plaga
-      const pestTypes = detections.map((d: any) => d.pestType);
-      if (pestTypes.includes('Pulgón')) {
-        recommendations.push('💡 Para pulgones, considera usar mariquitas como control biológico');
-      }
-      if (pestTypes.includes('Mosca blanca')) {
-        recommendations.push('💡 Las trampas adhesivas amarillas son muy efectivas contra moscas blancas');
-      }
-    } else {
-      recommendations.push('✅ No se detectaron plagas en la imagen');
-      recommendations.push('Tu cultivo se ve saludable');
-      recommendations.push('💡 Continúa monitoreando regularmente para prevenir infestaciones');
-    }
-
-    if (quality === 'poor') {
-      recommendations.push('💡 Mejora la iluminación para un mejor análisis');
-    }
-
-    if (metadata.width && metadata.height) {
-      const aspectRatio = metadata.width / metadata.height;
-      if (aspectRatio < 0.8 || aspectRatio > 1.2) {
-        recommendations.push('💡 Intenta tomar la foto más centrada en la planta');
-      }
-    }
-
-    return {
-      hasPest: detections.length > 0,
-      detections,
-      imageAnalysis: {
-        brightness,
-        contrast,
-        quality,
-        dimensions: {
-          width: metadata.width || 0,
-          height: metadata.height || 0
-        },
-        fileSize: imageBuffer.length
-      },
-      recommendations
-    };
-  } catch (error) {
-    console.error('Error analyzing image:', error);
-    throw new Error('Error al procesar la imagen');
-  }
-}
 
 // Middleware para manejar la subida de archivos
 export const uploadMiddleware = upload.single('image');
@@ -184,15 +69,15 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
     if (!authReq.file) {
       return res.status(400).json({
         success: false,
-        message: 'No se proporcionó ninguna imagen'
+        message: 'No se proporcionó ninguna imagen',
       });
     }
 
     const { cropType, location, notes, photoTimestamp } = req.body;
     const userId = authReq.userId;
 
-    // Analizar la imagen
-    const analysisResult = await analyzeImageForPests(authReq.file.buffer);
+    // Analizar la imagen usando el servicio
+    const analysisResult = await pestAnalysisService.analyzeImageForPests(authReq.file.buffer);
 
     // Convertir imagen a base64 para almacenamiento
     const imageData = `data:${authReq.file.mimetype};base64,${authReq.file.buffer.toString('base64')}`;
@@ -214,18 +99,18 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
       console.log('🔍 analyzePestImage - No hay photoTimestamp (imagen de galería)');
     }
     
-    const analysis = await PestAnalysisModel.create({
+    // Crear análisis usando el servicio
+    const analysis = await pestAnalysisService.createAnalysis(
       userId,
-      imageUrl: '', // En producción, subir a Firebase Storage
       imageData,
       analysisResult,
-      metadata: {
-        cropType: cropType || null,
-        location: location || null,
-        notes: notes || null
+      {
+        cropType: cropType || undefined,
+        location: location || undefined,
+        notes: notes || undefined,
       },
-      photoTimestamp: photoTimestampDate
-    });
+      photoTimestampDate
+    );
     
     console.log('🔍 analyzePestImage - analysis.createdAt:', analysis.createdAt);
     console.log('✅ analyzePestImage - Análisis creado exitosamente:', analysis.id);
@@ -239,17 +124,19 @@ export const analyzePestImage = [verifyFirebaseToken, async (req: Request, res: 
           cropType: cropType || null,
           location: location || null,
           notes: notes || null,
-          analyzedAt: photoTimestamp ? new Date(photoTimestamp).toISOString() : new Date().toISOString(),
-          userId: userId
-        }
-      }
+          analyzedAt: photoTimestamp
+            ? new Date(photoTimestamp).toISOString()
+            : new Date().toISOString(),
+          userId: userId,
+        },
+      },
     });
 
   } catch (error) {
     console.error('Error in analyzePestImage:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al analizar la imagen'
+      message: 'Error interno del servidor al analizar la imagen',
     });
   }
 }];
@@ -268,20 +155,11 @@ export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res
       console.error('❌ No userId found in request');
       return res.status(401).json({
         success: false,
-        message: 'Usuario no autenticado'
+        message: 'Usuario no autenticado',
       });
     }
 
-    console.log('🔍 Verificando Firebase...');
-    const { firestore } = await import('../config/firebase');
-    if (!firestore) {
-      console.error('❌ Firebase Firestore no está disponible');
-      return res.status(500).json({
-        success: false,
-        message: 'Firebase no está configurado correctamente'
-      });
-    }
-    console.log('✅ Firebase Firestore disponible');
+    // Validación de paginación ya manejada por middleware
 
     console.log('📊 Calling PestAnalysisModel.findByUserId...');
     const analyses = await PestAnalysisModel.findByUserId(userId, parseInt(limit as string) * parseInt(page as string));
@@ -291,7 +169,7 @@ export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res
     let filteredAnalyses = analyses;
     if (hasPest !== undefined) {
       const hasPestBool = hasPest === 'true';
-      filteredAnalyses = analyses.filter(a => a.analysisResult.hasPest === hasPestBool);
+      filteredAnalyses = analyses.filter((a) => a.analysisResult.hasPest === hasPestBool);
     }
 
     // Paginación
@@ -309,7 +187,7 @@ export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res
         createdAt: analysis.createdAt,
         createdAtType: typeof analysis.createdAt,
         createdAtInstance: analysis.createdAt instanceof Date,
-        createdAtString: analysis.createdAt?.toString()
+        createdAtString: analysis.createdAt?.toString(),
       });
     });
 
@@ -322,16 +200,16 @@ export const getAnalysisHistory = [verifyFirebaseToken, async (req: Request, res
           page: parseInt(page as string),
           limit: parseInt(limit as string),
           total: filteredAnalyses.length,
-          totalPages: Math.ceil(filteredAnalyses.length / parseInt(limit as string))
-        }
-      }
+          totalPages: Math.ceil(filteredAnalyses.length / parseInt(limit as string)),
+        },
+      },
     });
 
   } catch (error) {
     console.error('❌ Error in getAnalysisHistory:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al obtener el historial'
+      message: 'Error interno del servidor al obtener el historial',
     });
   }
 }];
@@ -347,14 +225,14 @@ export const getAnalysisStats = [verifyFirebaseToken, async (req: Request, res: 
     res.json({
       success: true,
       message: 'Estadísticas obtenidas exitosamente',
-      data: stats
+      data: stats,
     });
 
   } catch (error) {
     console.error('Error in getAnalysisStats:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al obtener las estadísticas'
+      message: 'Error interno del servidor al obtener las estadísticas',
     });
   }
 }];
@@ -371,7 +249,7 @@ export const deleteAnalysis = [verifyFirebaseToken, async (req: Request, res: Re
     if (!analysis || analysis.userId !== userId) {
       return res.status(404).json({
         success: false,
-        message: 'Análisis no encontrado'
+        message: 'Análisis no encontrado',
       });
     }
 
@@ -380,20 +258,20 @@ export const deleteAnalysis = [verifyFirebaseToken, async (req: Request, res: Re
     if (!deleted) {
       return res.status(500).json({
         success: false,
-        message: 'Error al eliminar el análisis'
+        message: 'Error al eliminar el análisis',
       });
     }
 
     res.json({
       success: true,
-      message: 'Análisis eliminado exitosamente'
+      message: 'Análisis eliminado exitosamente',
     });
 
   } catch (error) {
     console.error('Error in deleteAnalysis:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al eliminar el análisis'
+      message: 'Error interno del servidor al eliminar el análisis',
     });
   }
 }];
@@ -412,19 +290,21 @@ export const deleteOldAnalyses = [verifyFirebaseToken, async (req: Request, res:
 
     // Filtrar análisis con fechas sospechosas (31 dic 2023, 18:00)
     const suspiciousDate = new Date('2023-12-31T18:00:00Z');
-    const oldAnalyses = analyses.filter(analysis => {
-      const createdAt = analysis.createdAt instanceof Date ? analysis.createdAt : new Date(analysis.createdAt);
+    const oldAnalyses = analyses.filter((analysis) => {
+      const createdAt = analysis.createdAt instanceof Date
+        ? analysis.createdAt
+        : new Date(analysis.createdAt);
       // Buscar fechas que sean exactamente 31 dic 2023, 18:00 o muy cercanas
       const timeDiff = Math.abs(createdAt.getTime() - suspiciousDate.getTime());
       return timeDiff < 60000; // Dentro de 1 minuto de diferencia
     });
 
     console.log('🔍 Análisis sospechosos encontrados:', oldAnalyses.length);
-    oldAnalyses.forEach(analysis => {
+    oldAnalyses.forEach((analysis) => {
       console.log('🗑️ Eliminando análisis:', {
         id: analysis.id,
         createdAt: analysis.createdAt,
-        createdAtString: analysis.createdAt.toString()
+        createdAtString: analysis.createdAt.toString(),
       });
     });
 
@@ -442,14 +322,14 @@ export const deleteOldAnalyses = [verifyFirebaseToken, async (req: Request, res:
     res.json({
       success: true,
       message: `Se eliminaron ${deletedCount} análisis antiguos con fechas incorrectas`,
-      deletedCount
+      deletedCount,
     });
 
   } catch (error) {
     console.error('Error in deleteOldAnalyses:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor al eliminar análisis antiguos'
+      message: 'Error interno del servidor al eliminar análisis antiguos',
     });
   }
 }];

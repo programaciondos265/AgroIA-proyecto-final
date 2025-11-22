@@ -1,27 +1,9 @@
-// Tipos para el análisis de plagas
-export interface PestDetection {
-  pestType: string;
-  confidence: number;
-  description: string;
-  treatment: string;
-  severity: 'low' | 'medium' | 'high';
-}
-
-export interface AnalysisResult {
-  hasPest: boolean;
-  detections: PestDetection[];
-  imageAnalysis: {
-    brightness: number;
-    contrast: number;
-    quality: 'good' | 'fair' | 'poor';
-    dimensions: { width: number; height: number };
-    fileSize: number;
-  };
-  recommendations: string[];
-}
+import { AnalysisResult, AnalysisMetadata } from '../types/pestAnalysis';
+import { ApiResponse } from '../types/api';
+import { API_CONFIG } from '../constants/api';
 
 class PestAnalysisService {
-  private apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  private apiUrl = API_CONFIG.BASE_URL;
 
   // Obtener token de Firebase para autenticación
   private async getAuthToken(): Promise<string> {
@@ -72,7 +54,7 @@ class PestAnalysisService {
         photoTimestamp: metadata?.photoTimestamp
       });
 
-      const response = await fetch(`${this.apiUrl}/pest-analysis/analyze`, {
+      const response = await fetch(`${this.apiUrl}${API_CONFIG.ENDPOINTS.ANALYZE}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -127,7 +109,7 @@ class PestAnalysisService {
       const token = await this.getAuthToken();
       console.log('✅ Token obtenido:', token ? 'Token válido' : 'Sin token');
       
-      const url = `${this.apiUrl}/pest-analysis/history?page=${page}&limit=${limit}`;
+      const url = `${this.apiUrl}${API_CONFIG.ENDPOINTS.HISTORY}?page=${page}&limit=${limit}`;
       console.log('🌐 URL de la API:', url);
       
       const response = await fetch(url, {
@@ -179,7 +161,7 @@ class PestAnalysisService {
     try {
       const token = await this.getAuthToken();
       
-      const response = await fetch(`${this.apiUrl}/pest-analysis/stats`, {
+      const response = await fetch(`${this.apiUrl}${API_CONFIG.ENDPOINTS.STATS}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
@@ -202,7 +184,7 @@ class PestAnalysisService {
     try {
       const token = await this.getAuthToken();
       
-      const response = await fetch(`${this.apiUrl}/pest-analysis/${analysisId}`, {
+      const response = await fetch(`${this.apiUrl}${API_CONFIG.ENDPOINTS.DELETE}/${analysisId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -257,7 +239,7 @@ class PestAnalysisService {
     try {
       const token = await this.getAuthToken();
       
-      const response = await fetch(`${this.apiUrl}/pest-analysis/${analysisId}`, {
+      const response = await fetch(`${this.apiUrl}${API_CONFIG.ENDPOINTS.DELETE}/${analysisId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -281,7 +263,7 @@ class PestAnalysisService {
     try {
       const token = await this.getAuthToken();
       
-      const response = await fetch(`${this.apiUrl}/pest-analysis/cleanup/old-analyses`, {
+      const response = await fetch(`${this.apiUrl}${API_CONFIG.ENDPOINTS.DELETE}/cleanup/old-analyses`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

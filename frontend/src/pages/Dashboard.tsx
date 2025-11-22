@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Page = styled.main`
   min-height: 100vh;
-  background: #70C2B8;
+  background: ${({ theme }) => theme.colors.background};
   padding: 0;
   position: relative;
 `;
@@ -57,7 +57,7 @@ const Avatar = styled.div`
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: #3F8C82;
+  background: ${({ theme }) => theme.colors.avatarBg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,7 +121,7 @@ const Card = styled.div`
 const CameraIcon = styled.div`
   width: 80px;
   height: 80px;
-  background: #E8E8E8;
+  background: ${({ theme }) => theme.colors.grayLight};
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -158,7 +158,7 @@ const Actions = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background: #2F6E62;
+  background: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
   padding: 16px 24px;
@@ -173,7 +173,7 @@ const ActionButton = styled.button`
   gap: 10px;
 
   &:hover {
-    background: #5BA89A;
+    background: ${({ theme }) => theme.colors.primaryLight};
     transform: translateY(-1px);
   }
 
